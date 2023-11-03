@@ -66,13 +66,54 @@ class UrlShortenerControllerImpl(
 ) : UrlShortenerController {
 
     @GetMapping("/{id:(?!api|index).*}")
-    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> =
+    override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
+        val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
+
+        // Lógica para extraer el sistema operativo del User-Agent
+        val operatingSystem = parseOperatingSystemFromUserAgent(userAgent)
+
+        // Muestra el sistema operativo por la consola
+        println("Operating System: $operatingSystem")
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
             val h = HttpHeaders()
             h.location = URI.create(it.target)
-            ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
+            return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
         }
+    }
+
+    // Función para extraer el sistema operativo del User-Agent
+    private fun parseOperatingSystemFromUserAgent(userAgent: String): String {
+        // Lógica para extraer el sistema operativo del User-Agent
+        // Aquí puedes utilizar expresiones regulares u otros métodos de análisis
+        // de cadenas para identificar el sistema operativo
+        // Este ejemplo es básico y puede no cubrir todos los casos
+        return when {
+            userAgent.contains("Windows") -> "Windows"
+            userAgent.contains("Mac") -> "Macintosh"
+            userAgent.contains("Android") -> "Android"
+            userAgent.contains("iOS") -> "iOS"
+            else -> "Unknown OS"
+        }
+    }
+
+    @GetMapping("/api/link/{id}")
+    fun getLinkSummary(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Map<String, Any>> {
+        val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
+        val ipAddress = request.remoteAddr ?: "Unknown IP Address"
+        val additionalInfo = mapOf(
+            "userAgent" to userAgent,
+            "ipAddress" to ipAddress
+            // Agregar más información si es necesaria
+        )
+
+        val accumulatedInfo = mapOf(
+            "id" to id,
+            "additionalInfo" to additionalInfo
+        )
+
+        return ResponseEntity(accumulatedInfo, HttpStatus.OK)
+    }
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
@@ -94,4 +135,6 @@ class UrlShortenerControllerImpl(
             )
             ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
         }
+
+
 }
