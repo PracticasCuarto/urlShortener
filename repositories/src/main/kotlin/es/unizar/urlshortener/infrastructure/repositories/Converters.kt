@@ -66,3 +66,21 @@ fun ShortUrl.toEntity() = ShortUrlEntity(
     ip = properties.ip,
     country = properties.country
 )
+
+/**
+ * Extension method to convert a [RedirectSummaryEntity] into a domain [RedirectSummary].
+ */
+fun RedirectSummaryEntity.toDomain() = RedirectSummary(
+    os = os,
+    browser = browser,
+    url = url
+)
+
+/**
+ * Extension method to convert a domain [RedirectSummary] into a [RedirectSummaryEntity].
+ */
+fun RedirectSummary.toEntity() = RedirectSummaryEntity(
+    os = os,
+    browser = browser,
+    url = url
+)

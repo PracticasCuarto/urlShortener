@@ -32,3 +32,11 @@ interface ValidatorService {
 interface HashService {
     fun hasUrl(url: String): String
 }
+
+/**
+ * [RedirectSummaryRepositoryService] is the port to the repository that provides management to [RedirectSummary].
+ */
+interface RedirectSummaryRepositoryService {
+    fun save(info: RedirectSummary)
+    fun findByKey(key: String): RedirectSummary?
+}

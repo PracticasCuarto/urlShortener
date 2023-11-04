@@ -52,3 +52,12 @@ data class ClickProperties(
     val platform: String? = null,
     val country: String? = null
 )
+
+/**
+ * A [Redirect_summary] is the representation of a user.
+ */
+data class RedirectSummary(
+    val os: String,
+    val browser: String,
+    val url: String
+)

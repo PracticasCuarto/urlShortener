@@ -42,3 +42,17 @@ class ShortUrlEntity(
     val ip: String?,
     val country: String?
 )
+
+/**
+ * The [RedirectSummary] entity stores users.
+ */
+@Entity
+@Table(name = "redirect_summary")
+@Suppress("LongParameterList")
+class RedirectSummaryEntity(
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    val url: String,
+    val os: String,
+    val browser: String
+)

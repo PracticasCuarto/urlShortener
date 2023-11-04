@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport")
+@file:Suppress("WildcardImport", "ForbiddenComment")
 
 package es.unizar.urlshortener.infrastructure.delivery
 
@@ -44,6 +44,7 @@ class UrlShortenerControllerTest {
 
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
+        // TODO: Verificar que el test este bien (de momento pasamos info vacia)
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
 
         mockMvc.perform(get("/{id}", "key"))

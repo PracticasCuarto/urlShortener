@@ -1,6 +1,7 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.ClickProperties
+import es.unizar.urlshortener.core.RedirectSummary
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
@@ -65,16 +66,27 @@ class UrlShortenerControllerImpl(
     val createShortUrlUseCase: CreateShortUrlUseCase
 ) : UrlShortenerController {
 
+
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
+
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
 
-        // Lógica para extraer el sistema operativo del User-Agent
-        val operatingSystem = parseOperatingSystemFromUserAgent(userAgent)
+        // Lógica para extraer el sistema operativo y el navegador del User-Agent
+        val (operatingSystem, browser) = parseUserAgentDetails(userAgent)
 
-        // Muestra el sistema operativo por la consola
+        // Muestra el sistema operativo y el navegador por la consola
         println("Operating System: $operatingSystem")
-        redirectUseCase.redirectTo(id).let {
+        println("Browser: $browser")
+
+        // Crear el objeto RedirectSummary con los datos del sistema operativo, navegador y url
+        val info = RedirectSummary(
+            os = operatingSystem,
+            browser = browser,
+            url = request.requestURL.toString()
+        )
+
+        redirectUseCase.redirectTo(id, info).let {
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
             val h = HttpHeaders()
             h.location = URI.create(it.target)
@@ -82,37 +94,29 @@ class UrlShortenerControllerImpl(
         }
     }
 
-    // Función para extraer el sistema operativo del User-Agent
-    private fun parseOperatingSystemFromUserAgent(userAgent: String): String {
-        // Lógica para extraer el sistema operativo del User-Agent
-        // Aquí puedes utilizar expresiones regulares u otros métodos de análisis
-        // de cadenas para identificar el sistema operativo
+    // Función para extraer el sistema operativo y el navegador del User-Agent
+    private fun parseUserAgentDetails(userAgent: String): Pair<String, String> {
+        // Lógica para extraer el sistema operativo y el navegador del User-Agent
+        // Utiliza expresiones regulares u otros métodos de análisis de cadenas para identificarlos
         // Este ejemplo es básico y puede no cubrir todos los casos
-        return when {
+
+        val operatingSystem = when {
             userAgent.contains("Windows") -> "Windows"
             userAgent.contains("Mac") -> "Macintosh"
             userAgent.contains("Android") -> "Android"
             userAgent.contains("iOS") -> "iOS"
             else -> "Unknown OS"
         }
-    }
 
-    @GetMapping("/api/link/{id}")
-    fun getLinkSummary(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Map<String, Any>> {
-        val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
-        val ipAddress = request.remoteAddr ?: "Unknown IP Address"
-        val additionalInfo = mapOf(
-            "userAgent" to userAgent,
-            "ipAddress" to ipAddress
-            // Agregar más información si es necesaria
-        )
+        val browser = when {
+            userAgent.contains("Firefox") -> "Firefox"
+            userAgent.contains("Chrome") -> "Chrome"
+            userAgent.contains("Safari") -> "Safari"
+            userAgent.contains("Edge") -> "Edge"
+            else -> "Unknown Browser"
+        }
 
-        val accumulatedInfo = mapOf(
-            "id" to id,
-            "additionalInfo" to additionalInfo
-        )
-
-        return ResponseEntity(accumulatedInfo, HttpStatus.OK)
+        return Pair(operatingSystem, browser)
     }
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])

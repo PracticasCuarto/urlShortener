@@ -1,9 +1,8 @@
+@file:Suppress("WildcardImport")
+
 package es.unizar.urlshortener.infrastructure.repositories
 
-import es.unizar.urlshortener.core.Click
-import es.unizar.urlshortener.core.ClickRepositoryService
-import es.unizar.urlshortener.core.ShortUrl
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.*
 
 /**
  * Implementation of the port [ClickRepositoryService].
@@ -23,5 +22,20 @@ class ShortUrlRepositoryServiceImpl(
     override fun findByKey(id: String): ShortUrl? = shortUrlEntityRepository.findByHash(id)?.toDomain()
 
     override fun save(su: ShortUrl): ShortUrl = shortUrlEntityRepository.save(su.toEntity()).toDomain()
+}
+
+/**
+ * Implementation of the port [RedirectSummaryRepositoryService].
+ */
+class RedirectSummaryRepositoryServiceImpl(
+    private val redirectSummaryEntityRepository: RedirectSummaryEntityRepository
+) : RedirectSummaryRepositoryService {
+
+    override fun save(info: RedirectSummary) {
+        redirectSummaryEntityRepository.save(info.toEntity())
+    }
+
+    override fun findByKey(key: String): RedirectSummary? = redirectSummaryEntityRepository.
+    findByHash(key)?.toDomain()
 }
 
