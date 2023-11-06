@@ -24,20 +24,3 @@ class ShortUrlRepositoryServiceImpl(
     override fun save(su: ShortUrl): ShortUrl = shortUrlEntityRepository.save(su.toEntity()).toDomain()
 }
 
-/**
- * Implementation of the port [RedirectSummaryRepositoryService].
- */
-class RedirectSummaryRepositoryServiceImpl(
-    private val redirectSummaryEntityRepository: RedirectSummaryEntityRepository
-) : RedirectSummaryRepositoryService {
-
-    override fun save(info: RedirectSummary) {
-        redirectSummaryEntityRepository.save(info.toEntity())
-    }
-
-    override fun findByKey(key: String): RedirectSummary? = redirectSummaryEntityRepository
-        .findById(key)
-        .map { it.toDomain() }
-        .orElse(null)
-}
-

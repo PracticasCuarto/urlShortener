@@ -48,16 +48,8 @@ data class ShortUrlProperties(
 data class ClickProperties(
     val ip: String? = null,
     val referrer: String? = null,
-    val browser: String? = null,
+    val browser: String = "null",
+    val os: String = "null",
     val platform: String? = null,
     val country: String? = null
-)
-
-/**
- * A [Redirect_summary] is the representation of a user.
- */
-data class RedirectSummary(
-    val os: String,
-    val browser: String,
-    val url: String
 )

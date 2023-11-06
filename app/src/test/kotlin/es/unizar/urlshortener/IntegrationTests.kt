@@ -75,7 +75,10 @@ class HttpRequestTest {
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
 
-        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "redirect_summary", "browser = 'Chrome'")).isEqualTo(1)
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
+            "browser = 'Chrome'")).isEqualTo(1)
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
+            "os = 'Windows'")).isEqualTo(1)
     }
 
     @Test
@@ -88,7 +91,10 @@ class HttpRequestTest {
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
 
-        assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "redirect_summary")).isEqualTo(0)
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
+            "browser = 'null'")).isEqualTo(1)
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
+            "os = 'null'")).isEqualTo(1)
     }
 
     @Test

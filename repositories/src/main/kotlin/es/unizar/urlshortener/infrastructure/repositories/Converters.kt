@@ -15,23 +15,27 @@ fun ClickEntity.toDomain() = Click(
         referrer = referrer,
         browser = browser,
         platform = platform,
-        country = country
+        country = country,
+        os = os
     )
 )
 
 /**
  * Extension method to convert a domain [Click] into a [ClickEntity].
  */
-fun Click.toEntity() = ClickEntity(
-    id = null,
-    hash = hash,
-    created = created,
-    ip = properties.ip,
-    referrer = properties.referrer,
-    browser = properties.browser,
-    platform = properties.platform,
-    country = properties.country
-)
+fun Click.toEntity() = properties.browser.let {
+    ClickEntity(
+        id = null,
+        hash = hash,
+        created = created,
+        ip = properties.ip,
+        referrer = properties.referrer,
+        os = properties.os,
+        browser = it,
+        platform = properties.platform,
+        country = properties.country
+    )
+}
 
 /**
  * Extension method to convert a [ShortUrlEntity] into a domain [ShortUrl].
@@ -65,23 +69,4 @@ fun ShortUrl.toEntity() = ShortUrlEntity(
     safe = properties.safe,
     ip = properties.ip,
     country = properties.country
-)
-
-/**
- * Extension method to convert a [RedirectSummaryEntity] into a domain [RedirectSummary].
- */
-fun RedirectSummaryEntity.toDomain() = RedirectSummary(
-    os = os,
-    browser = browser,
-    url = url
-)
-
-/**
- * Extension method to convert a domain [RedirectSummary] into a [RedirectSummaryEntity].
- */
-fun RedirectSummary.toEntity() = RedirectSummaryEntity(
-    id = null,
-    os = os,
-    browser = browser,
-    url = url
 )

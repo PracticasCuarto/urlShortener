@@ -47,7 +47,7 @@ class UrlShortenerControllerTest {
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
         // TODO: Verificar que el test este bien (de momento pasamos info vacia)
-        given(redirectUseCase.redirectTo(eq("key"), any())).willReturn(Redirection("http://example.com/"))
+        given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
 
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isTemporaryRedirect)
@@ -58,7 +58,7 @@ class UrlShortenerControllerTest {
 
     @Test
     fun `redirectTo returns a not found when the key does not exist`() {
-        given(redirectUseCase.redirectTo(eq("key"), any()))
+        given(redirectUseCase.redirectTo("key"))
             .willAnswer { throw RedirectionNotFound("key") }
 
         mockMvc.perform(get("/{id}", "key"))

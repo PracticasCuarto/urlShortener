@@ -19,7 +19,8 @@ class ClickEntity(
     val created: OffsetDateTime,
     val ip: String?,
     val referrer: String?,
-    val browser: String?,
+    val browser: String,
+    val os: String,
     val platform: String?,
     val country: String?
 )
@@ -41,19 +42,4 @@ class ShortUrlEntity(
     val safe: Boolean,
     val ip: String?,
     val country: String?
-)
-
-/**
- * The [RedirectSummary] entity stores users.
- */
-@Entity
-@Table(name = "redirect_summary")
-@Suppress("LongParameterList")
-class RedirectSummaryEntity(
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    val id: Long?,
-    val url: String,
-    val os: String,
-    val browser: String
 )

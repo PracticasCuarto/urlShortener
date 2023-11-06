@@ -1,7 +1,6 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.ClickProperties
-import es.unizar.urlshortener.core.RedirectSummary
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.LogClickUseCase
@@ -71,7 +70,6 @@ class UrlShortenerControllerImpl(
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
 
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
-        val ip = request.remoteAddr
         // Lógica para extraer el sistema operativo y el navegador del User-Agent
         val (operatingSystem, browser) = parseUserAgentDetails(userAgent)
 
@@ -79,15 +77,9 @@ class UrlShortenerControllerImpl(
         println("Operating System: $operatingSystem")
         println("Browser: $browser")
 
-        // Crear el objeto RedirectSummary con los datos del sistema operativo, navegador y url
-         val info = RedirectSummary(
-            os = operatingSystem,
-            browser = browser,
-            url = request.requestURL.toString()
-        )
-
-        redirectUseCase.redirectTo(id, info).let {
-            logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr))
+        redirectUseCase.redirectTo(id).let {
+            logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr, os = operatingSystem,
+                browser = browser))
             val h = HttpHeaders()
             h.location = URI.create(it.target)
             return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))

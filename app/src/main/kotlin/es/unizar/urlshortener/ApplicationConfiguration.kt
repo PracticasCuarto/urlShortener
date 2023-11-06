@@ -20,8 +20,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
-    @Autowired val clickEntityRepository: ClickEntityRepository,
-    @Autowired val redirectSummaryEntityRepository: RedirectSummaryEntityRepository
+    @Autowired val clickEntityRepository: ClickEntityRepository
 ) {
     @Bean
     fun clickRepositoryService() = ClickRepositoryServiceImpl(clickEntityRepository)
@@ -30,16 +29,13 @@ class ApplicationConfiguration(
     fun shortUrlRepositoryService() = ShortUrlRepositoryServiceImpl(shortUrlEntityRepository)
 
     @Bean
-    fun redirectSummaryRepositoryService() = RedirectSummaryRepositoryServiceImpl(redirectSummaryEntityRepository)
-
-    @Bean
     fun validatorService() = ValidatorServiceImpl()
 
     @Bean
     fun hashService() = HashServiceImpl()
 
     @Bean
-    fun redirectUseCase() = RedirectUseCaseImpl(shortUrlRepositoryService(), redirectSummaryRepositoryService())
+    fun redirectUseCase() = RedirectUseCaseImpl(shortUrlRepositoryService())
 
     @Bean
     fun logClickUseCase() = LogClickUseCaseImpl(clickRepositoryService())

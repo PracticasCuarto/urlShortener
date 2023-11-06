@@ -17,10 +17,3 @@ interface ShortUrlEntityRepository : JpaRepository<ShortUrlEntity, String> {
  * **Note**: Spring Boot is able to discover this [JpaRepository] without further configuration.
  */
 interface ClickEntityRepository : JpaRepository<ClickEntity, Long>
-
-/**
- * Specification of the repository of [RedirectSummaryEntity].
- *
- * **Note**: Spring Boot is able to discover this [JpaRepository] without further configuration.
- */
-interface RedirectSummaryEntityRepository : JpaRepository<RedirectSummaryEntity, String>
