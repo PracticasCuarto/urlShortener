@@ -9,6 +9,8 @@ import es.unizar.urlshortener.core.usecases.RedirectUseCase
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -45,7 +47,7 @@ class UrlShortenerControllerTest {
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
         // TODO: Verificar que el test este bien (de momento pasamos info vacia)
-        given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
+        given(redirectUseCase.redirectTo(eq("key"), any())).willReturn(Redirection("http://example.com/"))
 
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isTemporaryRedirect)
@@ -56,7 +58,7 @@ class UrlShortenerControllerTest {
 
     @Test
     fun `redirectTo returns a not found when the key does not exist`() {
-        given(redirectUseCase.redirectTo("key"))
+        given(redirectUseCase.redirectTo(eq("key"), any()))
             .willAnswer { throw RedirectionNotFound("key") }
 
         mockMvc.perform(get("/{id}", "key"))

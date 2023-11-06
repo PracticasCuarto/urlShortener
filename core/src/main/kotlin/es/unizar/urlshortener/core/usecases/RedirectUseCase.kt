@@ -18,6 +18,7 @@ import es.unizar.urlshortener.core.RedirectSummaryRepositoryService
  */
 interface RedirectUseCase {
     fun redirectTo(key: String, info: RedirectSummary): Redirection
+    @Deprecated("Lo vamos a quitar, no nos gusta")
     fun redirectTo(key: String): Redirection
 }
 
@@ -37,10 +38,11 @@ class RedirectUseCaseImpl(
         } else {
             throw RedirectionNotFound(key)
         }
-
-        // Guardar el resumen de la redirección
-        //redirectSummaryRepository.save(info)
-        println("RedirectSummaryRepository.save(info) called")
+        if (info.browser != "null" || info.os != "null") {
+            // Guardar el resumen de la redirección
+            redirectSummaryRepository.save(info)
+            println("Almacenado en la base")
+        }
         return redirection
     }
 

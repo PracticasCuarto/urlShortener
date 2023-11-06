@@ -1,9 +1,12 @@
 # Spring Datasource
 spring:
   datasource:
-    url: jdbc:hsqldb:mem:.
+    url: jdbc:hsqldb:file:./app/build/db/baseDatos
     username: sa
     password:
     driverClassName: org.hsqldb.jdbc.JDBCDriver
   jpa:
     open-in-view: false
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.HSQLDialect

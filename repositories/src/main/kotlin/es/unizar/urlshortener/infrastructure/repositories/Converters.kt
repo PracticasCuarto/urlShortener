@@ -80,6 +80,7 @@ fun RedirectSummaryEntity.toDomain() = RedirectSummary(
  * Extension method to convert a domain [RedirectSummary] into a [RedirectSummaryEntity].
  */
 fun RedirectSummary.toEntity() = RedirectSummaryEntity(
+    id = null,
     os = os,
     browser = browser,
     url = url

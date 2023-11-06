@@ -71,7 +71,7 @@ class UrlShortenerControllerImpl(
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
 
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
-
+        val ip = request.remoteAddr
         // Lógica para extraer el sistema operativo y el navegador del User-Agent
         val (operatingSystem, browser) = parseUserAgentDetails(userAgent)
 
@@ -80,7 +80,7 @@ class UrlShortenerControllerImpl(
         println("Browser: $browser")
 
         // Crear el objeto RedirectSummary con los datos del sistema operativo, navegador y url
-        val info = RedirectSummary(
+         val info = RedirectSummary(
             os = operatingSystem,
             browser = browser,
             url = request.requestURL.toString()
@@ -105,7 +105,7 @@ class UrlShortenerControllerImpl(
             userAgent.contains("Mac") -> "Macintosh"
             userAgent.contains("Android") -> "Android"
             userAgent.contains("iOS") -> "iOS"
-            else -> "Unknown OS"
+            else -> "null"
         }
 
         val browser = when {
@@ -113,7 +113,7 @@ class UrlShortenerControllerImpl(
             userAgent.contains("Chrome") -> "Chrome"
             userAgent.contains("Safari") -> "Safari"
             userAgent.contains("Edge") -> "Edge"
-            else -> "Unknown Browser"
+            else -> "null"
         }
 
         return Pair(operatingSystem, browser)

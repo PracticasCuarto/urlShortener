@@ -35,7 +35,9 @@ class RedirectSummaryRepositoryServiceImpl(
         redirectSummaryEntityRepository.save(info.toEntity())
     }
 
-    override fun findByKey(key: String): RedirectSummary? = redirectSummaryEntityRepository.
-    findByHash(key)?.toDomain()
+    override fun findByKey(key: String): RedirectSummary? = redirectSummaryEntityRepository
+        .findById(key)
+        .map { it.toDomain() }
+        .orElse(null)
 }
 

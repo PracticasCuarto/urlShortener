@@ -23,6 +23,4 @@ interface ClickEntityRepository : JpaRepository<ClickEntity, Long>
  *
  * **Note**: Spring Boot is able to discover this [JpaRepository] without further configuration.
  */
-interface RedirectSummaryEntityRepository : JpaRepository<RedirectSummaryEntity, String> {
-    fun findByHash(hash: String): RedirectSummaryEntity?
-}
+interface RedirectSummaryEntityRepository : JpaRepository<RedirectSummaryEntity, String>

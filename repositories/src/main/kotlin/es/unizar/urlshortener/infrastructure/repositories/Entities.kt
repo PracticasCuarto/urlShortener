@@ -52,6 +52,7 @@ class ShortUrlEntity(
 class RedirectSummaryEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    val id: Long?,
     val url: String,
     val os: String,
     val browser: String

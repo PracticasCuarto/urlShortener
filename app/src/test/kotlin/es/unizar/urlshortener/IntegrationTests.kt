@@ -39,12 +39,12 @@ class HttpRequestTest {
             .build()
         (restTemplate.restTemplate.requestFactory as HttpComponentsClientHttpRequestFactory).httpClient = httpClient
 
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click")
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click", "redirect_summary")
     }
 
     @AfterEach
     fun tearDowns() {
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click")
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click", "redirect_summary")
     }
 
     @Test
@@ -63,6 +63,32 @@ class HttpRequestTest {
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
 
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(1)
+    }
+
+    @Test
+    fun `redirectTo processes user agent`() {
+        val target = shortUrl("http://example.com/").headers.location
+        require(target != null)
+        val headers = HttpHeaders()
+        headers["User-agent"] = "Windows, Chrome"
+        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+        assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "redirect_summary", "browser = 'Chrome'")).isEqualTo(1)
+    }
+
+    @Test
+    fun `redirectTo doesnt process invalid user agent`() {
+        val target = shortUrl("http://example.com/").headers.location
+        require(target != null)
+        val headers = HttpHeaders()
+        headers["User-agent"] = "asdnklajsd"
+        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+        assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+
+        assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "redirect_summary")).isEqualTo(0)
     }
 
     @Test
