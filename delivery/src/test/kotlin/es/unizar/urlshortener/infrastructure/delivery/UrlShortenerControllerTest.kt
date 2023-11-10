@@ -3,12 +3,11 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
-import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
-import es.unizar.urlshortener.core.usecases.LogClickUseCase
-import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import es.unizar.urlshortener.core.usecases.*
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
+import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
@@ -44,9 +43,11 @@ class UrlShortenerControllerTest {
     @MockBean
     private lateinit var createShortUrlUseCase: CreateShortUrlUseCase
 
+    @MockBean
+    private lateinit var returnInfoUseCase: ReturnInfoUseCase
+
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
-        // TODO: Verificar que el test este bien (de momento pasamos info vacia)
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
 
         mockMvc.perform(get("/{id}", "key"))
@@ -105,5 +106,33 @@ class UrlShortenerControllerTest {
         )
             .andExpect(status().isBadRequest)
             .andExpect(jsonPath("$.statusCode").value(400))
+    }
+
+        @Test
+        fun `returnInfo returns a list of info when the key exists`() {
+            // Hacer una petición con argumentos os: Windows, browser: Chrome
+            given(returnInfoUseCase.returnInfo("key"))
+                .willReturn(listOf(Info("0:0:0:0:0:0:0:1", "Macintosh", "Chrome")))
+
+            mockMvc.perform(get("/api/link/{id}", "key"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].ip").value("0:0:0:0:0:0:0:1"))
+                .andExpect(jsonPath("$[0].os").value("Macintosh"))
+                .andExpect(jsonPath("$[0].browser").value("Chrome"))
+
+            //verify(logClickUseCase).logClick("key", ClickProperties(ip = "127.0.0.1"))
+
+        }
+
+    @Test
+    fun `returnInfo returns a not found when the key does not exist`() {
+        given(returnInfoUseCase.returnInfo("malo"))
+            .willAnswer { throw InformationNotFound("malo") }
+
+        mockMvc.perform(get("/api/link/{id}", "malo"))
+            .andDo(print())
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.statusCode").value(404))
     }
 }

@@ -5,6 +5,8 @@ package es.unizar.urlshortener.core
  */
 interface ClickRepositoryService {
     fun save(cl: Click): Click
+
+    fun findByHash(hash: String): List<Click>
 }
 
 /**

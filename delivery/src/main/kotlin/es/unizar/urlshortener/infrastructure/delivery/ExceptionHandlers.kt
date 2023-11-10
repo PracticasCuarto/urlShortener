@@ -1,5 +1,6 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
+import es.unizar.urlshortener.core.InformationNotFound
 import es.unizar.urlshortener.core.InvalidUrlException
 import es.unizar.urlshortener.core.RedirectionNotFound
 import org.springframework.http.HttpStatus
@@ -23,6 +24,11 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [RedirectionNotFound::class])
     @ResponseStatus(HttpStatus.NOT_FOUND)
     fun redirectionNotFound(ex: RedirectionNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
+
+    @ResponseBody
+    @ExceptionHandler(value = [InformationNotFound::class])
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun informationNotFound(ex: InformationNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
 }
 
 data class ErrorMessage(

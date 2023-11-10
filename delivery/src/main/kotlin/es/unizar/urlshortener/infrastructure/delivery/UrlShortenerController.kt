@@ -1,10 +1,9 @@
+@file:Suppress("WildcardImport")
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.ShortUrlProperties
-import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
-import es.unizar.urlshortener.core.usecases.LogClickUseCase
-import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import es.unizar.urlshortener.core.usecases.*
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
@@ -35,6 +34,15 @@ interface UrlShortenerController {
      * **Note**: Delivery of use case [CreateShortUrlUseCase].
      */
     fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
+
+    /**
+     * Returns the information of a short url identified by its [id].
+     *
+     * **Note**: Delivery of use case [CreateShortUrlUseCase].
+     */
+    fun returnInfo(id: String): List<Info>
+
+
 }
 
 /**
@@ -62,7 +70,8 @@ data class ShortUrlDataOut(
 class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
-    val createShortUrlUseCase: CreateShortUrlUseCase
+    val createShortUrlUseCase: CreateShortUrlUseCase,
+    val returnInfoUseCase: ReturnInfoUseCase
 ) : UrlShortenerController {
 
 
@@ -111,6 +120,7 @@ class UrlShortenerControllerImpl(
         return Pair(operatingSystem, browser)
     }
 
+
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
         createShortUrlUseCase.create(
@@ -132,5 +142,15 @@ class UrlShortenerControllerImpl(
             ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
         }
 
+    @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    override fun returnInfo(@PathVariable id: String): List<Info> = returnInfoUseCase.returnInfo(id)
+//    @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
+//    override fun returnInfo(@PathVariable id: String): List<Info> =  checkIdOrThrow(id) { id ->
+//        returnInfoUseCase.returnInfo(id)
+//    }
 
+//    private fun <T> checkIdOrThrow(id: String, block: (String)->T): T {
+//        // chequeo que esta bien o no, y si eta mal lanzo la excepción correspondiente
+//        block(id)
+//    }
 }

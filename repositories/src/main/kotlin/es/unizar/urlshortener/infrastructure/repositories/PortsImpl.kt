@@ -11,9 +11,12 @@ class ClickRepositoryServiceImpl(
     private val clickEntityRepository: ClickEntityRepository
 ) : ClickRepositoryService {
     override fun save(cl: Click): Click = clickEntityRepository.save(cl.toEntity()).toDomain()
+
+    override fun findByHash(hash: String): List<Click> = clickEntityRepository.findByHash(hash).map { it.toDomain() }
+
 }
 
-/**
+    /**
  * Implementation of the port [ShortUrlRepositoryService].
  */
 class ShortUrlRepositoryServiceImpl(
