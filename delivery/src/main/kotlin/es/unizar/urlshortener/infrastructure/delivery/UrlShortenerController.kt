@@ -15,7 +15,8 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
-
+import ua_parser.Parser
+import ua_parser.Client
 /**
  * The specification of the controller.
  */
@@ -77,10 +78,14 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
-
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
         // Lógica para extraer el sistema operativo y el navegador del User-Agent
-        val (operatingSystem, browser) = parseUserAgentDetails(userAgent)
+        val uaParser = Parser()
+        val client = uaParser.parse(userAgent)
+
+        // Obtener información sobre el sistema operativo y el navegador
+        val operatingSystem = client.os.family
+        val browser = client.userAgent.family
 
         // Muestra el sistema operativo y el navegador por la consola
         println("Operating System: $operatingSystem")
@@ -95,30 +100,24 @@ class UrlShortenerControllerImpl(
         }
     }
 
-    // Función para extraer el sistema operativo y el navegador del User-Agent
-    private fun parseUserAgentDetails(userAgent: String): Pair<String, String> {
-        // Lógica para extraer el sistema operativo y el navegador del User-Agent
-        // Utiliza expresiones regulares u otros métodos de análisis de cadenas para identificarlos
-        // Este ejemplo es básico y puede no cubrir todos los casos
-
-        val operatingSystem = when {
-            userAgent.contains("Windows") -> "Windows"
-            userAgent.contains("Mac") -> "Macintosh"
-            userAgent.contains("Android") -> "Android"
-            userAgent.contains("iOS") -> "iOS"
-            else -> "null"
-        }
-
-        val browser = when {
-            userAgent.contains("Firefox") -> "Firefox"
-            userAgent.contains("Chrome") -> "Chrome"
-            userAgent.contains("Safari") -> "Safari"
-            userAgent.contains("Edge") -> "Edge"
-            else -> "null"
-        }
-
-        return Pair(operatingSystem, browser)
-    }
+//    private fun getApproximateLocation(ip: String): String {
+//        // Utiliza un servicio web de geolocalización o base de datos para obtener la ubicación
+//        // Aquí, se usa un ejemplo con el servicio gratuito de ipstack
+//        val apiKey = "tu_api_key"
+//        val apiUrl = "http://api.ipstack.com/$ip?access_key=$apiKey"
+//
+//        val url = URL(apiUrl)
+//        val connection = url.openConnection()
+//        val content = connection.getInputStream().bufferedReader().use { it.readText() }
+//
+//        // Analiza la respuesta JSON y extrae la información de ubicación necesaria
+//        // Aquí, se asume que la respuesta contiene el país y la ciudad
+//        // Puedes ajustar esto según la estructura real de la respuesta
+//        val country = "Country" // Reemplazar con el campo real en tu respuesta JSON
+//        val city = "City" // Reemplazar con el campo real en tu respuesta JSON
+//
+//        return "$city, $country"
+//    }
 
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])

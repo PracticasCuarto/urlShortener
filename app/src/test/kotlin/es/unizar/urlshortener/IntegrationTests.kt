@@ -70,7 +70,9 @@ class HttpRequestTest {
         val target = shortUrl("http://example.com/").headers.location
         require(target != null)
         val headers = HttpHeaders()
-        headers["User-agent"] = "Windows, Chrome"
+        headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                "Chrome/119.0.0.0 Safari/537.36"
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
@@ -78,7 +80,7 @@ class HttpRequestTest {
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "browser = 'Chrome'")).isEqualTo(1)
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
-            "os = 'Windows'")).isEqualTo(1)
+            "os = 'Mac OS X'")).isEqualTo(1)
     }
 
     @Test
@@ -92,9 +94,9 @@ class HttpRequestTest {
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
 
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
-            "browser = 'null'")).isEqualTo(1)
+            "browser = 'Other'")).isEqualTo(1)
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
-            "os = 'null'")).isEqualTo(1)
+            "os = 'Other'")).isEqualTo(1)
     }
 
     @Test

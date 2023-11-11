@@ -48,8 +48,8 @@ data class ShortUrlProperties(
 data class ClickProperties(
     val ip: String? = null,
     val referrer: String? = null,
-    val browser: String = "null",
-    val os: String = "null",
+    val browser: String = "Other",
+    val os: String = "Other",
     val platform: String? = null,
     val country: String? = null
 )
