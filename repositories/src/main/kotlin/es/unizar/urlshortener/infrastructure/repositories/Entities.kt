@@ -42,5 +42,5 @@ class ShortUrlEntity(
     val safe: Boolean,
     val ip: String?,
     val country: String?,
-    val limit: String?
+    val limit: Int?
 )

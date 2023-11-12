@@ -48,7 +48,7 @@ interface UrlShortenerController {
     fun shortener(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
-        @RequestParam(required = false, defaultValue = "0") limit: String
+        @RequestParam(required = false, defaultValue = "0") limite: String,
     ): ResponseEntity<ShortUrlDataOut>
 
     /**
@@ -136,39 +136,21 @@ class UrlShortenerControllerImpl(
         }
     }
 
-//    private fun getApproximateLocation(ip: String): String {
-//        // Utiliza un servicio web de geolocalización o base de datos para obtener la ubicación
-//        // Aquí, se usa un ejemplo con el servicio gratuito de ipstack
-//        val apiKey = "tu_api_key"
-//        val apiUrl = "http://api.ipstack.com/$ip?access_key=$apiKey"
-//
-//        val url = URL(apiUrl)
-//        val connection = url.openConnection()
-//        val content = connection.getInputStream().bufferedReader().use { it.readText() }
-//
-//        // Analiza la respuesta JSON y extrae la información de ubicación necesaria
-//        // Aquí, se asume que la respuesta contiene el país y la ciudad
-//        // Puedes ajustar esto según la estructura real de la respuesta
-//        val country = "Country" // Reemplazar con el campo real en tu respuesta JSON
-//        val city = "City" // Reemplazar con el campo real en tu respuesta JSON
-//
-//        return "$city, $country"
-//    }
-
     // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
-        @RequestParam(required = false, defaultValue = "0") limite: String
+        @RequestParam(required = false, defaultValue = "0") limite: String,
     ): ResponseEntity<ShortUrlDataOut> {
+        val limiteInt = limite.toInt()
         val result = createShortUrlUseCase.create(
             url = data.url,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
                 sponsor = data.sponsor,
-                limit = limite
+                limit = limiteInt
             )
         )
 
@@ -190,6 +172,8 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnInfo(@PathVariable id: String): List<Info> = returnInfoUseCase.returnInfo(id)
+
+
 }
 //    @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
 //    override fun returnInfo(@PathVariable id: String): List<Info> =  checkIdOrThrow(id) { id ->
