@@ -3,10 +3,6 @@ package es.unizar.urlshortener.core.usecases
 import es.unizar.urlshortener.core.ClickRepositoryService
 import es.unizar.urlshortener.core.InformationNotFound
 
-//import es.unizar.urlshortener.core.Redirection
-//import es.unizar.urlshortener.core.RedirectionNotFound
-//import es.unizar.urlshortener.core.ShortUrlRepositoryService
-
 /**
  * Given a key returns a [String] that contains the JSON info
  * of the users that have clicked the link.

@@ -144,7 +144,13 @@ class UrlShortenerControllerImpl(
         request: HttpServletRequest,
         @RequestParam(required = false, defaultValue = "0") limite: String,
     ): ResponseEntity<ShortUrlDataOut> {
-        val limiteInt = limite.toInt()
+        val limiteInt: Int
+        try {
+            limiteInt = limite.toInt()
+            println("Valor convertido a entero: $limiteInt")
+        } catch (e: NumberFormatException) {
+            return ResponseEntity(HttpHeaders(), HttpStatus.BAD_REQUEST)
+        }
         val result = createShortUrlUseCase.create(
             url = data.url,
             data = ShortUrlProperties(
