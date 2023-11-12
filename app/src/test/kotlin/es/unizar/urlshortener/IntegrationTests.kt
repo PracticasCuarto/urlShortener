@@ -16,9 +16,12 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.*
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.test.jdbc.JdbcTestUtils
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import java.net.URI
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -106,6 +109,40 @@ class HttpRequestTest {
 
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(0)
     }
+
+    @Test
+    fun `redirectTo adds to the database the ip and the location of the user`() {
+        // Especifica la IP deseada, por ejemplo, "188.99.61.3"
+        val specifiedIp = "188.77.145.43"
+
+        val target = shortUrl("http://example.com/").headers.location
+        require(target != null)
+        val headers = HttpHeaders()
+        headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                "Chrome/119.0.0.0 Safari/537.36"
+        // Hacer una peticion (request) con remoteAddr = "SpecifiedIp"
+        val request = MockHttpServletRequest()
+        request.remoteAddr = specifiedIp
+
+        // Configura el contexto de la solicitud
+        val requestAttributes = ServletRequestAttributes(request)
+        RequestContextHolder.setRequestAttributes(requestAttributes)
+
+        // Realiza la llamada GET utilizando RestTemplate personalizado
+        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+
+        // Imprime el contenido de la tabla "click" de la base de datos
+        val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
+        println("Contenido de la tabla 'click': $clickTableContent")
+
+        // Verifica que la IP especificada esté en la base de datos
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
+            "ip = '127.0.0.1'")).isEqualTo(1)
+
+        //AND country = 'null'
+    }
+
 
     @Test
     fun `creates returns a basic redirect if it can compute a hash`() {

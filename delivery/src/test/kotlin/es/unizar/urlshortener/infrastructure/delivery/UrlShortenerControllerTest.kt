@@ -135,4 +135,5 @@ class UrlShortenerControllerTest {
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.statusCode").value(404))
     }
+
 }

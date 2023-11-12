@@ -10,13 +10,21 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RestController
 import java.net.URI
 import ua_parser.Parser
 import ua_parser.Client
+import java.io.File
+import com.maxmind.db.Reader
+import com.maxmind.geoip2.DatabaseReader
+import com.maxmind.geoip2.model.CityResponse
+import org.springframework.web.bind.annotation.*
+import java.io.FileNotFoundException
+import java.net.InetAddress
+
+//This site or product includes IP2Location LITE data available from
+// <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
+
+
 /**
  * The specification of the controller.
  */
@@ -32,9 +40,16 @@ interface UrlShortenerController {
     /**
      * Creates a short url from details provided in [data].
      *
-     * **Note**: Delivery of use case [CreateShortUrlUseCase].
+     * @param data The data for creating a short URL.
+     * @param request The HttpServletRequest.
+     * @param limit The limit parameter (optional, with a default value of "default_limit").
+     * @return ResponseEntity containing ShortUrlDataOut.
      */
-    fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut>
+    fun shortener(
+        data: ShortUrlDataIn,
+        request: HttpServletRequest,
+        @RequestParam(required = false, defaultValue = "0") limit: String
+    ): ResponseEntity<ShortUrlDataOut>
 
     /**
      * Returns the information of a short url identified by its [id].
@@ -75,6 +90,10 @@ class UrlShortenerControllerImpl(
     val returnInfoUseCase: ReturnInfoUseCase
 ) : UrlShortenerController {
 
+    // A File object pointing to your GeoIP2 or GeoLite2 database
+    private val database = File("../GeoLite2-City.mmdb")
+
+    private val reader: DatabaseReader = DatabaseReader.Builder(database).build()
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
@@ -83,13 +102,32 @@ class UrlShortenerControllerImpl(
         val uaParser = Parser()
         val client = uaParser.parse(userAgent)
 
+        val currentDirectory = System.getProperty("user.dir")
+        println("El directorio actual es: $currentDirectory")
+
         // Obtener información sobre el sistema operativo y el navegador
         val operatingSystem = client.os.family
         val browser = client.userAgent.family
+        val ip = request.remoteAddr
+
+        if (ip != "0:0:0:0:0:0:0:1" && ip != "127.0.0.1") {
+            // Obtener información de la ciudad basada en la dirección IP
+            val ipAddress = InetAddress.getByName(ip)
+            val cityResponse: CityResponse = reader.city(ipAddress)
+
+            // Extraer información específica de la ciudad (puedes ajustar según tus necesidades)
+            val cityName = cityResponse.city.name
+            val countryIsoCode = cityResponse.country.isoCode
+
+            // Muestra información de la ciudad por la consola
+            println("City: $cityName")
+            println("Country ISO Code: $countryIsoCode")
+        }
 
         // Muestra el sistema operativo y el navegador por la consola
         println("Operating System: $operatingSystem")
         println("Browser: $browser")
+        println("Client IP: $ip")
 
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr, os = operatingSystem,
@@ -121,28 +159,38 @@ class UrlShortenerControllerImpl(
 
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
-    override fun shortener(data: ShortUrlDataIn, request: HttpServletRequest): ResponseEntity<ShortUrlDataOut> =
-        createShortUrlUseCase.create(
+    override fun shortener(
+        data: ShortUrlDataIn,
+        request: HttpServletRequest,
+        @RequestParam(required = false, defaultValue = "0") limit: String
+    ): ResponseEntity<ShortUrlDataOut> {
+        val result = createShortUrlUseCase.create(
             url = data.url,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
                 sponsor = data.sponsor
             )
-        ).let {
-            val h = HttpHeaders()
-            val url = linkTo<UrlShortenerControllerImpl> { redirectTo(it.hash, request) }.toUri()
-            h.location = url
-            val response = ShortUrlDataOut(
-                url = url,
-                properties = mapOf(
-                    "safe" to it.properties.safe
-                )
+        )
+
+        println("El límite es: $limit")
+
+        val h = HttpHeaders()
+        val url = linkTo<UrlShortenerControllerImpl> { redirectTo(result.hash, request) }.toUri()
+        h.location = url
+
+        val response = ShortUrlDataOut(
+            url = url,
+            properties = mapOf(
+                "safe" to result.properties.safe
             )
-            ResponseEntity<ShortUrlDataOut>(response, h, HttpStatus.CREATED)
-        }
+        )
+
+        return ResponseEntity(response, h, HttpStatus.CREATED)
+    }
 
     @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnInfo(@PathVariable id: String): List<Info> = returnInfoUseCase.returnInfo(id)
+}
 //    @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
 //    override fun returnInfo(@PathVariable id: String): List<Info> =  checkIdOrThrow(id) { id ->
 //        returnInfoUseCase.returnInfo(id)
@@ -152,4 +200,3 @@ class UrlShortenerControllerImpl(
 //        // chequeo que esta bien o no, y si eta mal lanzo la excepción correspondiente
 //        block(id)
 //    }
-}
