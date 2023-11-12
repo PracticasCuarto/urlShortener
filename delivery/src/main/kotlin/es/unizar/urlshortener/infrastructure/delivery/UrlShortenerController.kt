@@ -88,6 +88,7 @@ class UrlShortenerControllerImpl(
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val returnInfoUseCase: ReturnInfoUseCase
+
 ) : UrlShortenerController {
 
     // A File object pointing to your GeoIP2 or GeoLite2 database
@@ -101,9 +102,6 @@ class UrlShortenerControllerImpl(
         // Lógica para extraer el sistema operativo y el navegador del User-Agent
         val uaParser = Parser()
         val client = uaParser.parse(userAgent)
-
-        val currentDirectory = System.getProperty("user.dir")
-        println("El directorio actual es: $currentDirectory")
 
         // Obtener información sobre el sistema operativo y el navegador
         val operatingSystem = client.os.family
@@ -157,22 +155,24 @@ class UrlShortenerControllerImpl(
 //        return "$city, $country"
 //    }
 
+    // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
-        @RequestParam(required = false, defaultValue = "0") limit: String
+        @RequestParam(required = false, defaultValue = "0") limite: String
     ): ResponseEntity<ShortUrlDataOut> {
         val result = createShortUrlUseCase.create(
             url = data.url,
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
-                sponsor = data.sponsor
+                sponsor = data.sponsor,
+                limit = limite
             )
         )
 
-        println("El límite es: $limit")
+        println("El límite es: $limite")
 
         val h = HttpHeaders()
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(result.hash, request) }.toUri()
