@@ -120,26 +120,24 @@ class UrlShortenerControllerImpl(
         // Obtener el límite de redirecciones permitido y el número actual de redirecciones
         val limite = redirectLimitUseCase.obtainLimit(id)
         val numRedirecciones = redirectLimitUseCase.obtainNumRedirects(id)
-        //val horaAnterior = redirectLimitUseCase.obtenerHora(id)
+        val horaAnterior = redirectLimitUseCase.obtenerHora(id)
 
         // Verificar si hay un límite establecido
         if (limite != 0) {
-//            if (horaAnterior != "null") {
-//                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-//                val horaAnteriorDateTime = LocalDateTime.parse(horaAnterior, formatter)
-//                // Obtener la hora actual
-//                val horaActual = LocalDateTime.now()
-//                val duracionTranscurrida = Duration.between(horaAnteriorDateTime, horaActual)
-//
-//                println("La hora anterior es: $horaAnterior y la hora actual es: $horaActual")
-//
-//                // Verificar si ha pasado más de una hora desde la última redirección
-//                if (duracionTranscurrida >= Duration.ofHours(1)) {
-//                    // Se ha superado la duración máxima permitida, reiniciar contador y actualizar la hora
-//                    redirectLimitUseCase.reiniciarNumRedirecciones(id)
-//                    redirectLimitUseCase.actualizarHora(id, horaActual)
-//                }
-//            }
+            if (horaAnterior != null) {
+                // Obtener la hora actual
+                val horaActual = LocalDateTime.now()
+                val duracionTranscurrida = Duration.between(horaAnterior, horaActual)
+
+                println("La hora anterior es: $horaAnterior y la hora actual es: $horaActual")
+
+                // Verificar si ha pasado más de una hora desde la última redirección
+                if (duracionTranscurrida >= Duration.ofHours(1)) {
+                    // Se ha superado la duración máxima permitida, reiniciar contador y actualizar la hora
+                    redirectLimitUseCase.reiniciarNumRedirecciones(id)
+                    redirectLimitUseCase.actualizarHora(id, horaActual)
+                }
+            }
 
             // Verificar que no se superen el número máximo de redirecciones permitidas
             if (numRedirecciones >= limite) {
@@ -174,16 +172,12 @@ class UrlShortenerControllerImpl(
             return ResponseEntity(HttpStatus.BAD_REQUEST)
         }
 
-//        // Formatear la hora actual como String según tus necesidades
-//        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-//        val horaActualString = LocalDateTime.now().format(formatter)
-
         val datos = ShortUrlProperties(
             ip = request.remoteAddr,
             sponsor = data.sponsor,
             limit = limiteInt,
             numRedirecciones = 0,
-            horaRedireccion = null
+            horaRedireccion = null // Cambiar por LocalDateTime.now() para activar el límite de redirecciones
         )
 
         val result = createShortUrlUseCase.create(
