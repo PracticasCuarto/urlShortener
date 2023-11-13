@@ -56,7 +56,8 @@ fun ShortUrlEntity.toDomain() = ShortUrl(
         ip = ip,
         country = country,
         limit = limit,
-        numRedirecciones = numRedirecciones
+        numRedirecciones = numRedirecciones,
+        horaRedireccion = horaRedireccion
     )
 )
 
@@ -74,5 +75,6 @@ fun ShortUrl.toEntity() = ShortUrlEntity(
     ip = properties.ip,
     country = properties.country,
     limit = properties.limit,
-    numRedirecciones = properties.numRedirecciones
+    numRedirecciones = properties.numRedirecciones,
+    horaRedireccion = properties.horaRedireccion
 )

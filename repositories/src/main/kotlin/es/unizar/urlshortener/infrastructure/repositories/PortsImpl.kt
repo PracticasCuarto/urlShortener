@@ -3,6 +3,8 @@
 package es.unizar.urlshortener.infrastructure.repositories
 
 import es.unizar.urlshortener.core.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Implementation of the port [ClickRepositoryService].
@@ -33,25 +35,30 @@ class ShortUrlRepositoryServiceImpl(
     override fun obtenerNumRedirecciones(id: String): Int = shortUrlEntityRepository.findByHash(id)?.
     toDomain()?.properties?.numRedirecciones ?: 0
 
-//    override fun actualizarNumRedirecciones(id: String, numRedirecciones: Int) {
-//        // 1. Buscar la entidad de URL corta por su hash
-//        val shortUrlEntity = shortUrlEntityRepository.findByHash(id)
-//
-//        // 2. Verificar si la entidad existe
-//        if (shortUrlEntity != null) {
-//            // 3. Actualizar el valor de numRedirecciones en la entidad
-//            shortUrlEntity.numRedirecciones = numRedirecciones
-//
-//            // 4. Guardar la entidad actualizada en la base de datos
-//            shortUrlEntityRepository.save(shortUrlEntity)
-//        }
-//    }
-
-    override fun actualizarNumRedirecciones(id: String, _numRedirecciones: Int) {
+    override fun actualizarNumRedirecciones(id: String, numeroRedirecciones: Int) {
         shortUrlEntityRepository.findByHash(id)?.apply {
-            numRedirecciones = _numRedirecciones
+            numRedirecciones = numeroRedirecciones
             shortUrlEntityRepository.save(this)
         }
     }
+
+    override fun reiniciarNumRedirecciones(id: String) {
+        shortUrlEntityRepository.findByHash(id)?.apply {
+            numRedirecciones = 0
+            shortUrlEntityRepository.save(this)
+        }
+    }
+
+    override fun obtenerHoraRedireccion(id: String): LocalDateTime? {
+        return shortUrlEntityRepository.findByHash(id)?.horaRedireccion
+    }
+
+    override fun actualizarHoraRedireccion(id: String, horaRedireccionActual: LocalDateTime) {
+        shortUrlEntityRepository.findByHash(id)?.apply {
+            horaRedireccion = horaRedireccionActual
+            shortUrlEntityRepository.save(this)
+        }
+    }
+
 }
 

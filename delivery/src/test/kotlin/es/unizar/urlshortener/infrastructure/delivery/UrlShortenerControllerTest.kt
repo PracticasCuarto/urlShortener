@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport", "ForbiddenComment")
+@file:Suppress("WildcardImport", "ForbiddenComment", "UnusedPrivateProperty")
 
 package es.unizar.urlshortener.infrastructure.delivery
 
@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import java.time.LocalDateTime
 
 @WebMvcTest
 @ContextConfiguration(
@@ -45,6 +46,9 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var returnInfoUseCase: ReturnInfoUseCase
+
+    @MockBean
+    private lateinit var redirectLimitUseCase: RedirectLimitUseCase
 
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
@@ -75,7 +79,7 @@ class UrlShortenerControllerTest {
         given(
             createShortUrlUseCase.create(
                 url = "http://example.com/",
-                data = ShortUrlProperties(ip = "127.0.0.1")
+                data = ShortUrlProperties(ip = "127.0.0.1", horaRedireccion = null)
             )
         ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
 

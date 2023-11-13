@@ -42,12 +42,12 @@ class HttpRequestTest {
             .build()
         (restTemplate.restTemplate.requestFactory as HttpComponentsClientHttpRequestFactory).httpClient = httpClient
 
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click", "redirect_summary")
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click")
     }
 
     @AfterEach
     fun tearDowns() {
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click", "redirect_summary")
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click")
     }
 
     @Test

@@ -20,6 +20,9 @@ import com.maxmind.geoip2.model.CityResponse
 import org.springframework.web.bind.annotation.*
 import java.io.FileNotFoundException
 import java.net.InetAddress
+import java.time.LocalDateTime
+import java.time.Duration
+import java.time.format.DateTimeFormatter
 
 //This site or product includes IP2Location LITE data available from
 // <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
@@ -48,7 +51,7 @@ interface UrlShortenerController {
     fun shortener(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
-        @RequestParam(required = false, defaultValue = "0") limite: String,
+        @RequestParam(required = false, defaultValue = "0") limit: String,
     ): ResponseEntity<ShortUrlDataOut>
 
     /**
@@ -87,7 +90,8 @@ class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
-    val returnInfoUseCase: ReturnInfoUseCase
+    val returnInfoUseCase: ReturnInfoUseCase,
+    val redirectLimitUseCase: RedirectLimitUseCase
 
 ) : UrlShortenerController {
 
@@ -101,7 +105,7 @@ class UrlShortenerControllerImpl(
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
         val propiedades = obtenerInformacionUsuario(userAgent, request)
 
-        // Verificar que no se superan el numero maximo de redirecciones permitidas
+        if (limiteRedirecciones(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, propiedades)
@@ -110,6 +114,50 @@ class UrlShortenerControllerImpl(
             return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
         }
     }
+
+    // Registra una nueva redirección y devuelve true si el número de redirecciones supera el límite
+    private fun limiteRedirecciones(id: String): Boolean {
+        // Obtener el límite de redirecciones permitido y el número actual de redirecciones
+        val limite = redirectLimitUseCase.obtainLimit(id)
+        val numRedirecciones = redirectLimitUseCase.obtainNumRedirects(id)
+        //val horaAnterior = redirectLimitUseCase.obtenerHora(id)
+
+        // Verificar si hay un límite establecido
+        if (limite != 0) {
+//            if (horaAnterior != "null") {
+//                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+//                val horaAnteriorDateTime = LocalDateTime.parse(horaAnterior, formatter)
+//                // Obtener la hora actual
+//                val horaActual = LocalDateTime.now()
+//                val duracionTranscurrida = Duration.between(horaAnteriorDateTime, horaActual)
+//
+//                println("La hora anterior es: $horaAnterior y la hora actual es: $horaActual")
+//
+//                // Verificar si ha pasado más de una hora desde la última redirección
+//                if (duracionTranscurrida >= Duration.ofHours(1)) {
+//                    // Se ha superado la duración máxima permitida, reiniciar contador y actualizar la hora
+//                    redirectLimitUseCase.reiniciarNumRedirecciones(id)
+//                    redirectLimitUseCase.actualizarHora(id, horaActual)
+//                }
+//            }
+
+            // Verificar que no se superen el número máximo de redirecciones permitidas
+            if (numRedirecciones >= limite) {
+                // Se ha alcanzado el limite de redirecciones
+                return true
+            }
+        }
+
+        // No hay límite de redirecciones o no se ha alcanzado el máximo permitido, registrar nueva redirección
+        redirectLimitUseCase.newRedirect(id)
+
+        // Imprimir información de depuración
+        println("El límite es: $limite y el número de redirecciones es: $numRedirecciones")
+
+        // Se ha alcanzado o superado el número máximo de redirecciones permitidas
+        return false
+    }
+
 
     // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
 
@@ -122,18 +170,25 @@ class UrlShortenerControllerImpl(
         val limiteInt: Int
         try {
             limiteInt = limit.toInt()
-            println("Valor convertido a entero: $limiteInt")
         } catch (e: NumberFormatException) {
-            return ResponseEntity(HttpHeaders(), HttpStatus.BAD_REQUEST)
+            return ResponseEntity(HttpStatus.BAD_REQUEST)
         }
+
+//        // Formatear la hora actual como String según tus necesidades
+//        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+//        val horaActualString = LocalDateTime.now().format(formatter)
+
+        val datos = ShortUrlProperties(
+            ip = request.remoteAddr,
+            sponsor = data.sponsor,
+            limit = limiteInt,
+            numRedirecciones = 0,
+            horaRedireccion = null
+        )
 
         val result = createShortUrlUseCase.create(
             url = data.url,
-            data = ShortUrlProperties(
-                ip = request.remoteAddr,
-                sponsor = data.sponsor,
-                limit = limiteInt
-            )
+            data = datos
         )
 
         val h = HttpHeaders()

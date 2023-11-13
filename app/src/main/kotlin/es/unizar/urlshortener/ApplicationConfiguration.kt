@@ -2,10 +2,7 @@
 
 package es.unizar.urlshortener
 
-import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCaseImpl
-import es.unizar.urlshortener.core.usecases.LogClickUseCaseImpl
-import es.unizar.urlshortener.core.usecases.RedirectUseCaseImpl
-import es.unizar.urlshortener.core.usecases.ReturnInfoUseCaseImpl
+import es.unizar.urlshortener.core.usecases.*
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.*
@@ -47,5 +44,8 @@ class ApplicationConfiguration(
 
     @Bean
     fun returnInfoUseCase() = ReturnInfoUseCaseImpl(clickRepositoryService())
+
+    @Bean
+    fun redirectLimitUseCase() = RedirectLimitUseCaseImpl(shortUrlRepositoryService())
 
 }

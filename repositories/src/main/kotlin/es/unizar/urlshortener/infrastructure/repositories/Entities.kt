@@ -3,6 +3,7 @@
 package es.unizar.urlshortener.infrastructure.repositories
 
 import jakarta.persistence.*
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 /**
@@ -44,5 +45,6 @@ class ShortUrlEntity(
     val ip: String?,
     val country: String?,
     val limit: Int?,
-    var numRedirecciones: Int?
+    var numRedirecciones: Int?,
+    var horaRedireccion: LocalDateTime?
 )
