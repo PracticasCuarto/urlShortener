@@ -40,7 +40,8 @@ data class ShortUrlProperties(
     val safe: Boolean = true,
     val owner: String? = null,
     val country: String? = null,
-    val limit: Int? = 0
+    val limit: Int? = 0,
+    val numRedirecciones: Int? = 0
 )
 
 /**
@@ -52,5 +53,6 @@ data class ClickProperties(
     val browser: String = "Other",
     val os: String = "Other",
     val platform: String? = null,
-    val country: String? = null
+    val country: String? = null,
+    val city: String? = null
 )

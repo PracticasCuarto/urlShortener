@@ -22,7 +22,8 @@ class ClickEntity(
     val browser: String,
     val os: String,
     val platform: String?,
-    val country: String?
+    val country: String?,
+    val city: String?
 )
 
 /**
@@ -42,5 +43,6 @@ class ShortUrlEntity(
     val safe: Boolean,
     val ip: String?,
     val country: String?,
-    val limit: Int?
+    val limit: Int?,
+    var numRedirecciones: Int?
 )

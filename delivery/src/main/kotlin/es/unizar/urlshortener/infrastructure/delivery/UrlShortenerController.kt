@@ -99,37 +99,12 @@ class UrlShortenerControllerImpl(
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
-        // Lógica para extraer el sistema operativo y el navegador del User-Agent
-        val uaParser = Parser()
-        val client = uaParser.parse(userAgent)
+        val propiedades = obtenerInformacionUsuario(userAgent, request)
 
-        // Obtener información sobre el sistema operativo y el navegador
-        val operatingSystem = client.os.family
-        val browser = client.userAgent.family
-        val ip = request.remoteAddr
-
-        if (ip != "0:0:0:0:0:0:0:1" && ip != "127.0.0.1") {
-            // Obtener información de la ciudad basada en la dirección IP
-            val ipAddress = InetAddress.getByName(ip)
-            val cityResponse: CityResponse = reader.city(ipAddress)
-
-            // Extraer información específica de la ciudad (puedes ajustar según tus necesidades)
-            val cityName = cityResponse.city.name
-            val countryIsoCode = cityResponse.country.isoCode
-
-            // Muestra información de la ciudad por la consola
-            println("City: $cityName")
-            println("Country ISO Code: $countryIsoCode")
-        }
-
-        // Muestra el sistema operativo y el navegador por la consola
-        println("Operating System: $operatingSystem")
-        println("Browser: $browser")
-        println("Client IP: $ip")
+        // Verificar que no se superan el numero maximo de redirecciones permitidas
 
         redirectUseCase.redirectTo(id).let {
-            logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr, os = operatingSystem,
-                browser = browser))
+            logClickUseCase.logClick(id, propiedades)
             val h = HttpHeaders()
             h.location = URI.create(it.target)
             return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
@@ -142,15 +117,16 @@ class UrlShortenerControllerImpl(
     override fun shortener(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
-        @RequestParam(required = false, defaultValue = "0") limite: String,
+        @RequestParam(required = false, defaultValue = "0") limit: String,
     ): ResponseEntity<ShortUrlDataOut> {
         val limiteInt: Int
         try {
-            limiteInt = limite.toInt()
+            limiteInt = limit.toInt()
             println("Valor convertido a entero: $limiteInt")
         } catch (e: NumberFormatException) {
             return ResponseEntity(HttpHeaders(), HttpStatus.BAD_REQUEST)
         }
+
         val result = createShortUrlUseCase.create(
             url = data.url,
             data = ShortUrlProperties(
@@ -159,8 +135,6 @@ class UrlShortenerControllerImpl(
                 limit = limiteInt
             )
         )
-
-        println("El límite es: $limite")
 
         val h = HttpHeaders()
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(result.hash, request) }.toUri()
@@ -179,14 +153,41 @@ class UrlShortenerControllerImpl(
     @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnInfo(@PathVariable id: String): List<Info> = returnInfoUseCase.returnInfo(id)
 
+    private fun obtenerInformacionUsuario(
+        userAgent: String,
+        request: HttpServletRequest
+    ): ClickProperties {
+        // Lógica para extraer el sistema operativo y el navegador del User-Agent
+        val uaParser = Parser()
+        val client = uaParser.parse(userAgent)
 
+        // Obtener información sobre el sistema operativo y el navegador
+        val operatingSystem = client.os.family
+        val browser = client.userAgent.family
+        val ip = request.remoteAddr
+        var cityName: String? = null
+        var countryIsoCode: String? = null
+
+        if (ip != "0:0:0:0:0:0:0:1" && ip != "127.0.0.1") {
+            // Obtener información de la ciudad basada en la dirección IP
+            val ipAddress = InetAddress.getByName(ip)
+            val cityResponse: CityResponse = reader.city(ipAddress)
+
+            // Extraer información específica de la ciudad (puedes ajustar según tus necesidades)
+            cityName = cityResponse.city.name
+            countryIsoCode = cityResponse.country.isoCode
+        }
+
+        // Mostrar toda la informacion del usuario que solicita la redireccion
+        println(
+            "Usuario solicita redireccion: SistemaOperativo[$operatingSystem], Navegador[$browser], " +
+                    "IP[$ip], Ciudad[$cityName], Pais[$countryIsoCode]"
+        )
+
+        val propiedades = ClickProperties(
+            ip = request.remoteAddr, os = operatingSystem,
+            browser = browser, country = countryIsoCode, city = cityName
+        )
+        return propiedades
+    }
 }
-//    @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
-//    override fun returnInfo(@PathVariable id: String): List<Info> =  checkIdOrThrow(id) { id ->
-//        returnInfoUseCase.returnInfo(id)
-//    }
-
-//    private fun <T> checkIdOrThrow(id: String, block: (String)->T): T {
-//        // chequeo que esta bien o no, y si eta mal lanzo la excepción correspondiente
-//        block(id)
-//    }

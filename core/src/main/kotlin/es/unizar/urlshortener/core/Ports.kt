@@ -7,6 +7,8 @@ interface ClickRepositoryService {
     fun save(cl: Click): Click
 
     fun findByHash(hash: String): List<Click>
+
+
 }
 
 /**
@@ -15,6 +17,12 @@ interface ClickRepositoryService {
 interface ShortUrlRepositoryService {
     fun findByKey(id: String): ShortUrl?
     fun save(su: ShortUrl): ShortUrl
+
+    fun obtenerNumRedirecciones(id: String): Int
+
+    fun actualizarNumRedirecciones(id: String, numRedirecciones: Int)
+
+    fun obtainLimit(hash: String): Int
 }
 
 /**
