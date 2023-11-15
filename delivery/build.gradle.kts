@@ -16,7 +16,8 @@ dependencies {
     implementation("com.google.guava:guava:${Version.GUAVA}")
     implementation("com.github.ua-parser:uap-java:1.5.4")
     implementation("com.maxmind.geoip2:geoip2:2.14.0")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    //implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-actuator:3.1.3")
 
 
 

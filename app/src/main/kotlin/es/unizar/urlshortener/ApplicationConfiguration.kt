@@ -2,14 +2,15 @@
 
 package es.unizar.urlshortener
 
-import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCaseImpl
-import es.unizar.urlshortener.core.usecases.LogClickUseCaseImpl
-import es.unizar.urlshortener.core.usecases.RedirectUseCaseImpl
-import es.unizar.urlshortener.core.usecases.ReturnInfoUseCaseImpl
+import es.unizar.urlshortener.core.usecases.*
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
-import es.unizar.urlshortener.infrastructure.repositories.*
+import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
+import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
+import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
+import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServiceImpl
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.actuate.metrics.MetricsEndpoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -21,7 +22,9 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
-    @Autowired val clickEntityRepository: ClickEntityRepository
+    @Autowired val clickEntityRepository: ClickEntityRepository,
+    @Autowired val metricsEndpoint: MetricsEndpoint // Agrega esta línea para la inyección de MetricsEndpoint
+
 ) {
     @Bean
     fun clickRepositoryService() = ClickRepositoryServiceImpl(clickEntityRepository)
@@ -47,5 +50,8 @@ class ApplicationConfiguration(
 
     @Bean
     fun returnInfoUseCase() = ReturnInfoUseCaseImpl(clickRepositoryService())
+
+    @Bean
+    fun returnSystemInfoUseCase() = ReturnSystemInfoUseCaseImpl(metricsEndpoint)
 
 }

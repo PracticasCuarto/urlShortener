@@ -1,6 +1,8 @@
 @file:Suppress("WildcardImport")
 package es.unizar.urlshortener.infrastructure.delivery
 
+import com.maxmind.geoip2.DatabaseReader
+import com.maxmind.geoip2.model.CityResponse
 import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.*
@@ -10,16 +12,12 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import java.net.URI
-import ua_parser.Parser
-import ua_parser.Client
-import java.io.File
-import com.maxmind.db.Reader
-import com.maxmind.geoip2.DatabaseReader
-import com.maxmind.geoip2.model.CityResponse
 import org.springframework.web.bind.annotation.*
-import java.io.FileNotFoundException
+import ua_parser.Parser
+import java.io.File
 import java.net.InetAddress
+import java.net.URI
+
 
 //This site or product includes IP2Location LITE data available from
 // <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
@@ -58,7 +56,7 @@ interface UrlShortenerController {
      */
     fun returnInfo(id: String): List<Info>
 
-
+    fun returnSystemInfo(@PathVariable id: String): SystemInfo
 }
 
 /**
@@ -87,7 +85,9 @@ class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
-    val returnInfoUseCase: ReturnInfoUseCase
+    val returnInfoUseCase: ReturnInfoUseCase,
+    val returnSystemInfoUseCase: ReturnSystemInfoUseCase
+    //val metricsEndpoint: MetricsEndpoint
 ) : UrlShortenerController {
 
     // A File object pointing to your GeoIP2 or GeoLite2 database
@@ -138,25 +138,6 @@ class UrlShortenerControllerImpl(
         }
     }
 
-//    private fun getApproximateLocation(ip: String): String {
-//        // Utiliza un servicio web de geolocalización o base de datos para obtener la ubicación
-//        // Aquí, se usa un ejemplo con el servicio gratuito de ipstack
-//        val apiKey = "tu_api_key"
-//        val apiUrl = "http://api.ipstack.com/$ip?access_key=$apiKey"
-//
-//        val url = URL(apiUrl)
-//        val connection = url.openConnection()
-//        val content = connection.getInputStream().bufferedReader().use { it.readText() }
-//
-//        // Analiza la respuesta JSON y extrae la información de ubicación necesaria
-//        // Aquí, se asume que la respuesta contiene el país y la ciudad
-//        // Puedes ajustar esto según la estructura real de la respuesta
-//        val country = "Country" // Reemplazar con el campo real en tu respuesta JSON
-//        val city = "City" // Reemplazar con el campo real en tu respuesta JSON
-//
-//        return "$city, $country"
-//    }
-
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(
@@ -190,13 +171,10 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnInfo(@PathVariable id: String): List<Info> = returnInfoUseCase.returnInfo(id)
-}
-//    @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
-//    override fun returnInfo(@PathVariable id: String): List<Info> =  checkIdOrThrow(id) { id ->
-//        returnInfoUseCase.returnInfo(id)
-//    }
 
-//    private fun <T> checkIdOrThrow(id: String, block: (String)->T): T {
-//        // chequeo que esta bien o no, y si eta mal lanzo la excepción correspondiente
-//        block(id)
-//    }
+    @GetMapping("/api/metrics/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    override fun returnSystemInfo(@PathVariable id: String):
+            SystemInfo = returnSystemInfoUseCase.returnSystemInfo(id)
+}
+
+

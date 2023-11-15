@@ -10,3 +10,14 @@ spring:
     hibernate:
       ddl-auto: update
       dialect: org.hibernate.dialect.HSQLDialect
+
+# Actuator Endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  metrics:
+    enable:
+      uptime: true
+      memory: true
