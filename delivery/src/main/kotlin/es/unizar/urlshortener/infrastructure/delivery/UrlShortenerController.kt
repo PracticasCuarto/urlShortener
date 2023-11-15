@@ -21,6 +21,7 @@ import java.net.URI
 import com.maxmind.db.Reader
 import org.springframework.web.bind.annotation.*
 import java.io.FileNotFoundException
+import java.net.HttpURLConnection
 
 import java.time.LocalDateTime
 import java.time.Duration
@@ -54,7 +55,7 @@ interface UrlShortenerController {
         data: ShortUrlDataIn,
         request: HttpServletRequest,
         @RequestParam(required = false, defaultValue = "0") limit: String,
-    ): ResponseEntity<ShortUrlDataOut>
+    ): ResponseEntity<ShortUrlDataReapose>
 
     /**
      * Returns the information of a short url identified by its [id].
@@ -74,13 +75,22 @@ data class ShortUrlDataIn(
     val sponsor: String? = null
 )
 
+sealed interface ShortUrlDataReapose
+
 /**
- * Data returned after the creation of a short url.
- */
+Data returned after the creation of a short url.*/
 data class ShortUrlDataOut(
     val url: URI? = null,
     val properties: Map<String, Any> = emptyMap()
-)
+) :  ShortUrlDataReapose
+
+/**
+ * Error returned after the intention of creation of a short url.
+ */
+data class Error(
+    val statusCode: Int,
+    val message: String
+) : ShortUrlDataReapose
 
 /**
  * The implementation of the controller.
@@ -95,7 +105,8 @@ class UrlShortenerControllerImpl(
     val returnInfoUseCase: ReturnInfoUseCase,
     val returnSystemInfoUseCase: ReturnSystemInfoUseCase,
     //val metricsEndpoint: MetricsEndpoint
-    val redirectLimitUseCase: RedirectLimitUseCase
+    val redirectLimitUseCase: RedirectLimitUseCase,
+    val isUrlReachableUseCase: IsUrlReachableUseCase
 
 ) : UrlShortenerController {
 
@@ -163,12 +174,12 @@ class UrlShortenerControllerImpl(
 
     // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
 
-    @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
+    @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun shortener(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
         @RequestParam(required = false, defaultValue = "0") limit: String,
-    ): ResponseEntity<ShortUrlDataOut> {
+    ): ResponseEntity<ShortUrlDataReapose> {
         val limiteInt: Int
         try {
             limiteInt = limit.toInt()
@@ -199,6 +210,19 @@ class UrlShortenerControllerImpl(
                 "safe" to result.properties.safe
             )
         )
+
+        // comprobamos si la URL es alcanzable
+        if (isUrlReachableUseCase.isUrlReachable(data.url) != HttpURLConnection.HTTP_OK) {
+            println("La URL no es alcanzable")
+            val response = Error(
+                statusCode = HttpStatus.BAD_REQUEST.value(),
+                message = "URI de destino no alcanzable"
+            )
+            return ResponseEntity(response,HttpStatus.BAD_REQUEST)
+        }
+        else {
+            println("La URL es alcanzable")
+        }
 
         return ResponseEntity(response, h, HttpStatus.CREATED)
     }

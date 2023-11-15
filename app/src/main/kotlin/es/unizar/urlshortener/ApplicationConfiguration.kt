@@ -56,4 +56,7 @@ class ApplicationConfiguration(
     @Bean
     fun redirectLimitUseCase() = RedirectLimitUseCaseImpl(shortUrlRepositoryService())
 
+    @Bean
+    fun isUrlReachableUseCase() = IsUrlReachableUseCaseImpl()
+
 }
