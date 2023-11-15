@@ -19,6 +19,10 @@ data class SystemInfo (
     val totalURLHour: Int? = null
 )
 
+const val BYTES = 1024
+const val MILISECONDS = 1000
+const val METRICAEJEMPLO = 5678
+
 /**
  * Implementation of [ReturnSystemInfoUseCase].
  */
@@ -31,16 +35,16 @@ class ReturnSystemInfoUseCaseImpl(
         // Obtener la métrica jvm.memory.used
         val usedMemoryMetrics = metricsEndpoint.metric("jvm.memory.used", null)
         val usedMemory = usedMemoryMetrics.measurements.firstOrNull()?.value
-        val usedMemoryInMb = usedMemory?.div((1024 * 1024)) // Convertir bytes a megabytes
+        val usedMemoryInMb = usedMemory?.div((BYTES * BYTES)) // Convertir bytes a megabytes
 
         // Obtener la métrica process.uptime
         val uptimeMetrics = metricsEndpoint.metric("process.uptime", null)
         val uptime = uptimeMetrics.measurements.firstOrNull()?.value
-        val uptimeInSeconds = uptime?.div(1000) // Convertir milisegundos a segundos
+        val uptimeInSeconds = uptime?.div(MILISECONDS) // Convertir milisegundos a segundos
 
         // Obtener la métrica de cantidad total de URLs acortadas
         // De la base de datos (entities) tabla ShortUrlEntity
-        val totalURLMetrics = 5678
+        val totalURLMetrics = METRICAEJEMPLO
 
         // Metrica para ver cuanta gente ha utilizado el servicio en la ultima hora
 

@@ -14,9 +14,13 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ua_parser.Parser
+import ua_parser.Client
 import java.io.File
 import java.net.InetAddress
 import java.net.URI
+import com.maxmind.db.Reader
+import org.springframework.web.bind.annotation.*
+import java.io.FileNotFoundException
 
 import java.time.LocalDateTime
 import java.time.Duration
@@ -89,7 +93,7 @@ class UrlShortenerControllerImpl(
     val logClickUseCase: LogClickUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase,
     val returnInfoUseCase: ReturnInfoUseCase,
-    val returnSystemInfoUseCase: ReturnSystemInfoUseCase
+    val returnSystemInfoUseCase: ReturnSystemInfoUseCase,
     //val metricsEndpoint: MetricsEndpoint
     val redirectLimitUseCase: RedirectLimitUseCase
 
@@ -205,8 +209,6 @@ class UrlShortenerControllerImpl(
     @GetMapping("/api/metrics/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnSystemInfo(@PathVariable id: String):
             SystemInfo = returnSystemInfoUseCase.returnSystemInfo(id)
-}
-
 
     private fun obtenerInformacionUsuario(
         userAgent: String,

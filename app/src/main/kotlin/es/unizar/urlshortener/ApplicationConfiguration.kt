@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration
 class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
     @Autowired val clickEntityRepository: ClickEntityRepository,
-    @Autowired val metricsEndpoint: MetricsEndpoint // Agrega esta línea para la inyección de MetricsEndpoint
+    @Autowired val metricsEndpoint: MetricsEndpoint
 
 ) {
     @Bean
@@ -53,6 +53,7 @@ class ApplicationConfiguration(
 
     @Bean
     fun returnSystemInfoUseCase() = ReturnSystemInfoUseCaseImpl(metricsEndpoint)
+    @Bean
     fun redirectLimitUseCase() = RedirectLimitUseCaseImpl(shortUrlRepositoryService())
 
 }
