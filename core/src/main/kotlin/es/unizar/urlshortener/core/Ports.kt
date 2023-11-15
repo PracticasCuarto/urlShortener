@@ -1,5 +1,7 @@
 package es.unizar.urlshortener.core
 
+import java.time.LocalDateTime
+
 /**
  * [ClickRepositoryService] is the port to the repository that provides persistence to [Clicks][Click].
  */
@@ -7,6 +9,8 @@ interface ClickRepositoryService {
     fun save(cl: Click): Click
 
     fun findByHash(hash: String): List<Click>
+
+
 }
 
 /**
@@ -15,6 +19,18 @@ interface ClickRepositoryService {
 interface ShortUrlRepositoryService {
     fun findByKey(id: String): ShortUrl?
     fun save(su: ShortUrl): ShortUrl
+
+    fun obtenerNumRedirecciones(id: String): Int
+
+    fun actualizarNumRedirecciones(id: String, numeroRedirecciones: Int)
+
+    fun reiniciarNumRedirecciones(id: String)
+
+    fun obtainLimit(hash: String): Int
+
+    fun obtenerHoraRedireccion(id: String): LocalDateTime?
+
+    fun actualizarHoraRedireccion(id: String, horaRedireccionActual: LocalDateTime)
 }
 
 /**

@@ -18,6 +18,9 @@ import java.io.File
 import java.net.InetAddress
 import java.net.URI
 
+import java.time.LocalDateTime
+import java.time.Duration
+import java.time.format.DateTimeFormatter
 
 //This site or product includes IP2Location LITE data available from
 // <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
@@ -46,7 +49,7 @@ interface UrlShortenerController {
     fun shortener(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
-        @RequestParam(required = false, defaultValue = "0") limit: String
+        @RequestParam(required = false, defaultValue = "0") limit: String,
     ): ResponseEntity<ShortUrlDataOut>
 
     /**
@@ -88,6 +91,8 @@ class UrlShortenerControllerImpl(
     val returnInfoUseCase: ReturnInfoUseCase,
     val returnSystemInfoUseCase: ReturnSystemInfoUseCase
     //val metricsEndpoint: MetricsEndpoint
+    val redirectLimitUseCase: RedirectLimitUseCase
+
 ) : UrlShortenerController {
 
     // A File object pointing to your GeoIP2 or GeoLite2 database
@@ -98,62 +103,87 @@ class UrlShortenerControllerImpl(
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
-        // Lógica para extraer el sistema operativo y el navegador del User-Agent
-        val uaParser = Parser()
-        val client = uaParser.parse(userAgent)
+        val propiedades = obtenerInformacionUsuario(userAgent, request)
 
-        val currentDirectory = System.getProperty("user.dir")
-        println("El directorio actual es: $currentDirectory")
-
-        // Obtener información sobre el sistema operativo y el navegador
-        val operatingSystem = client.os.family
-        val browser = client.userAgent.family
-        val ip = request.remoteAddr
-
-        if (ip != "0:0:0:0:0:0:0:1" && ip != "127.0.0.1") {
-            // Obtener información de la ciudad basada en la dirección IP
-            val ipAddress = InetAddress.getByName(ip)
-            val cityResponse: CityResponse = reader.city(ipAddress)
-
-            // Extraer información específica de la ciudad (puedes ajustar según tus necesidades)
-            val cityName = cityResponse.city.name
-            val countryIsoCode = cityResponse.country.isoCode
-
-            // Muestra información de la ciudad por la consola
-            println("City: $cityName")
-            println("Country ISO Code: $countryIsoCode")
-        }
-
-        // Muestra el sistema operativo y el navegador por la consola
-        println("Operating System: $operatingSystem")
-        println("Browser: $browser")
-        println("Client IP: $ip")
+        if (limiteRedirecciones(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
         redirectUseCase.redirectTo(id).let {
-            logClickUseCase.logClick(id, ClickProperties(ip = request.remoteAddr, os = operatingSystem,
-                browser = browser))
+            logClickUseCase.logClick(id, propiedades)
             val h = HttpHeaders()
             h.location = URI.create(it.target)
             return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
         }
     }
 
+    // Registra una nueva redirección y devuelve true si el número de redirecciones supera el límite
+    private fun limiteRedirecciones(id: String): Boolean {
+        // Obtener el límite de redirecciones permitido y el número actual de redirecciones
+        val limite = redirectLimitUseCase.obtainLimit(id)
+        val numRedirecciones = redirectLimitUseCase.obtainNumRedirects(id)
+        val horaAnterior = redirectLimitUseCase.obtenerHora(id)
+
+        // Verificar si hay un límite establecido
+        if (limite != 0) {
+            if (horaAnterior != null) {
+                // Obtener la hora actual
+                val horaActual = LocalDateTime.now()
+                val duracionTranscurrida = Duration.between(horaAnterior, horaActual)
+
+                println("La hora anterior es: $horaAnterior y la hora actual es: $horaActual")
+
+                // Verificar si ha pasado más de una hora desde la última redirección
+                if (duracionTranscurrida >= Duration.ofHours(1)) {
+                    // Se ha superado la duración máxima permitida, reiniciar contador y actualizar la hora
+                    redirectLimitUseCase.reiniciarNumRedirecciones(id)
+                    redirectLimitUseCase.actualizarHora(id, horaActual)
+                }
+            }
+
+            // Verificar que no se superen el número máximo de redirecciones permitidas
+            if (numRedirecciones >= limite) {
+                // Se ha alcanzado el limite de redirecciones
+                return true
+            }
+        }
+
+        // No hay límite de redirecciones o no se ha alcanzado el máximo permitido, registrar nueva redirección
+        redirectLimitUseCase.newRedirect(id)
+
+        // Imprimir información de depuración
+        println("El límite es: $limite y el número de redirecciones es: $numRedirecciones")
+
+        // Se ha alcanzado o superado el número máximo de redirecciones permitidas
+        return false
+    }
+
+
+    // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE])
     override fun shortener(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
-        @RequestParam(required = false, defaultValue = "0") limit: String
+        @RequestParam(required = false, defaultValue = "0") limit: String,
     ): ResponseEntity<ShortUrlDataOut> {
-        val result = createShortUrlUseCase.create(
-            url = data.url,
-            data = ShortUrlProperties(
-                ip = request.remoteAddr,
-                sponsor = data.sponsor
-            )
+        val limiteInt: Int
+        try {
+            limiteInt = limit.toInt()
+        } catch (e: NumberFormatException) {
+            return ResponseEntity(HttpStatus.BAD_REQUEST)
+        }
+
+        val datos = ShortUrlProperties(
+            ip = request.remoteAddr,
+            sponsor = data.sponsor,
+            limit = limiteInt,
+            numRedirecciones = 0,
+            horaRedireccion = null // Cambiar por LocalDateTime.now() para activar el límite de redirecciones
         )
 
-        println("El límite es: $limit")
+        val result = createShortUrlUseCase.create(
+            url = data.url,
+            data = datos
+        )
 
         val h = HttpHeaders()
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(result.hash, request) }.toUri()
@@ -178,3 +208,41 @@ class UrlShortenerControllerImpl(
 }
 
 
+    private fun obtenerInformacionUsuario(
+        userAgent: String,
+        request: HttpServletRequest
+    ): ClickProperties {
+        // Lógica para extraer el sistema operativo y el navegador del User-Agent
+        val uaParser = Parser()
+        val client = uaParser.parse(userAgent)
+
+        // Obtener información sobre el sistema operativo y el navegador
+        val operatingSystem = client.os.family
+        val browser = client.userAgent.family
+        val ip = request.remoteAddr
+        var cityName: String? = null
+        var countryIsoCode: String? = null
+
+        if (ip != "0:0:0:0:0:0:0:1" && ip != "127.0.0.1") {
+            // Obtener información de la ciudad basada en la dirección IP
+            val ipAddress = InetAddress.getByName(ip)
+            val cityResponse: CityResponse = reader.city(ipAddress)
+
+            // Extraer información específica de la ciudad (puedes ajustar según tus necesidades)
+            cityName = cityResponse.city.name
+            countryIsoCode = cityResponse.country.isoCode
+        }
+
+        // Mostrar toda la informacion del usuario que solicita la redireccion
+        println(
+            "Usuario solicita redireccion: SistemaOperativo[$operatingSystem], Navegador[$browser], " +
+                    "IP[$ip], Ciudad[$cityName], Pais[$countryIsoCode]"
+        )
+
+        val propiedades = ClickProperties(
+            ip = request.remoteAddr, os = operatingSystem,
+            browser = browser, country = countryIsoCode, city = cityName
+        )
+        return propiedades
+    }
+}

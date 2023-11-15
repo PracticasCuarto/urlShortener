@@ -24,7 +24,9 @@ class LogClickUseCaseImpl(
             properties = ClickProperties(
                 ip = data.ip,
                 os = data.os,
-                browser = data.browser
+                browser = data.browser,
+                country = data.country,
+                city = data.city
             )
         )
         clickRepository.save(cl)

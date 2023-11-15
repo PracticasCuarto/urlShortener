@@ -47,8 +47,7 @@ class HttpRequestTest {
 
     @AfterEach
     fun tearDowns() {
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click"
-        )
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click")
     }
 
     @Test
@@ -59,7 +58,7 @@ class HttpRequestTest {
     }
 
     @Test
-    fun `redirectTo returns a redirect when the key exists`() {
+    fun `shortener returns a redirect when the key exists`() {
         val target = shortUrl("http://example.com/").headers.location
         require(target != null)
         val response = restTemplate.getForEntity(target, String::class.java)
@@ -67,6 +66,21 @@ class HttpRequestTest {
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
 
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(1)
+    }
+
+    @Test
+    fun `shortener limits the amount of redirections in the database`() {
+        val target = shortUrl("http://example.com/", "3").headers.location
+        require(target != null)
+        val response = restTemplate.getForEntity(target, String::class.java)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+        assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+
+        // Imprime el contenido de la tabla "click" de la base de datos
+        val shorturlTableContent = jdbcTemplate.queryForList("SELECT * FROM shorturl")
+        println("Contenido de la tabla 'shorturl': $shorturlTableContent")
+
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "shorturl","limit = '3'" )).isEqualTo(1)
     }
 
     @Test
@@ -112,25 +126,15 @@ class HttpRequestTest {
     }
 
     @Test
-    fun `redirectTo adds to the database the ip and the location of the user`() {
-        // Especifica la IP deseada, por ejemplo, "188.99.61.3"
+    fun `redirectTo adds to the database the ip and the location of the user for existing short URL`() {
+        // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada,Barcelona
         val specifiedIp = "188.77.145.43"
-
         val target = shortUrl("http://example.com/").headers.location
-        require(target != null)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
-        // Hacer una peticion (request) con remoteAddr = "SpecifiedIp"
-        val request = MockHttpServletRequest()
-        request.remoteAddr = specifiedIp
-
-        // Configura el contexto de la solicitud
-        val requestAttributes = ServletRequestAttributes(request)
-        RequestContextHolder.setRequestAttributes(requestAttributes)
-
-        // Realiza la llamada GET utilizando RestTemplate personalizado
+        headers["X-Forwarded-For"] = specifiedIp
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Imprime el contenido de la tabla "click" de la base de datos
@@ -139,9 +143,28 @@ class HttpRequestTest {
 
         // Verifica que la IP especificada esté en la base de datos
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
-            "ip = '127.0.0.1'")).isEqualTo(1)
+            "ip = '$specifiedIp' AND Country = 'ES' AND City = 'Igualada'")).isEqualTo(1)
+    }
 
-        //AND country = 'null'
+    @Test
+    fun `redirectTo adds to the database the ip and the location of the user for non-existent short URL`() {
+        // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada,Barcelona
+        val specifiedIp = "188.77.145.43"
+        val target = shortUrl("http://www.mcdonaldsnoessano.com/").headers.location
+        val headers = HttpHeaders()
+        headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                "Chrome/119.0.0.0 Safari/537.36"
+        headers["X-Forwarded-For"] = specifiedIp
+        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+
+        // Imprime el contenido de la tabla "click" de la base de datos
+        val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
+        println("Contenido de la tabla 'click': $clickTableContent")
+
+        // Verifica que la IP especificada esté en la base de datos
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
+            "ip = '$specifiedIp' AND Country = 'ES' AND City = 'Igualada'")).isEqualTo(1)
     }
 
 
@@ -183,6 +206,21 @@ class HttpRequestTest {
 
         val data: MultiValueMap<String, String> = LinkedMultiValueMap()
         data["url"] = url
+
+        return restTemplate.postForEntity(
+            "http://localhost:$port/api/link",
+            HttpEntity(data, headers),
+            ShortUrlDataOut::class.java
+        )
+    }
+
+    private fun shortUrl(url: String, limit: String): ResponseEntity<ShortUrlDataOut> {
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+
+        val data: MultiValueMap<String, String> = LinkedMultiValueMap()
+        data["url"] = url
+        data["limit"] = limit  // Agrega el parámetro limit=3 al cuerpo de la solicitud
 
         return restTemplate.postForEntity(
             "http://localhost:$port/api/link",

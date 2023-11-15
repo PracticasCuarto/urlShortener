@@ -1,5 +1,6 @@
 package es.unizar.urlshortener.core
 
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 /**
@@ -39,7 +40,10 @@ data class ShortUrlProperties(
     val sponsor: String? = null,
     val safe: Boolean = true,
     val owner: String? = null,
-    val country: String? = null
+    val country: String? = null,
+    val limit: Int? = 0,
+    val numRedirecciones: Int? = 0,
+    val horaRedireccion: LocalDateTime? = null
 )
 
 /**
@@ -51,5 +55,6 @@ data class ClickProperties(
     val browser: String = "Other",
     val os: String = "Other",
     val platform: String? = null,
-    val country: String? = null
+    val country: String? = null,
+    val city: String? = null
 )

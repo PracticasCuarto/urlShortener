@@ -31,7 +31,10 @@ class CreateShortUrlUseCaseImpl(
                 properties = ShortUrlProperties(
                     safe = data.safe,
                     ip = data.ip,
-                    sponsor = data.sponsor
+                    sponsor = data.sponsor,
+                    limit = data.limit,
+                    numRedirecciones = data.numRedirecciones,
+                    horaRedireccion = data.horaRedireccion
                 )
             )
             shortUrlRepository.save(su)
