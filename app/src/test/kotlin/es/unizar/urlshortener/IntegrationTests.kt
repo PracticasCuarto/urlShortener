@@ -3,7 +3,6 @@
 package es.unizar.urlshortener
 
 import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataOut
-import es.unizar.urlshortener.infrastructure.delivery.Error
 import es.unizar.urlshortener.infrastructure.delivery.UrlShortenerControllerImpl
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
 import org.assertj.core.api.Assertions.assertThat
@@ -18,16 +17,12 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.*
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.test.jdbc.JdbcTestUtils
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
 import java.net.URI
 import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseGoodMock
 import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseBadMock
-import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataReapose
 
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -157,6 +152,13 @@ class HttpRequestTest {
 
     @Test
     fun `redirectTo adds to the database the ip and the location of the user for non-existent short URL`() {
+        // forzamos a que la url sea alcanzable
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock
+
+        // Configure the controller to use the reachableMock
+        urlShortenerController.isUrlReachableUseCase = reachableMock
+
         // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada, Barcelona
         val specifiedIp = "188.77.145.43"
         val target = shortUrl("http://www.mcdonaldsnoessano.com/").headers.location
