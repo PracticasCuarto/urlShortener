@@ -14,8 +14,7 @@ $(document).ready(function () {
                     + "</a></div>");
             },
             error: function (xhr, textStatus, errorThrown) {
-                var errorResponse = xhr.responseJSON; // Intenta obtener un mensaje de error personalizado del servidor
-                var errorMessage = (errorResponse && errorResponse.message) ? errorResponse.message : "Error desconocido";
+                var errorMessage = xhr.responseText || "Error desconocido";
 
                 $("#result").html(
                     "<div class='alert alert-danger lead'>" + errorMessage + "</div>");

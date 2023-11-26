@@ -1,4 +1,5 @@
-@file:Suppress("WildcardImport", "MaxLineLength", "ReturnCount", "LongParameterList")
+
+@file:Suppress("WildcardImport", "MaxLineLength", "ReturnCount", "LongParameterList", "UnusedPrivateProperty", "UnusedParameter")
 package es.unizar.urlshortener.infrastructure.delivery
 
 import com.maxmind.geoip2.DatabaseReader
@@ -6,6 +7,9 @@ import com.maxmind.geoip2.model.CityResponse
 import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.*
+import io.micrometer.core.instrument.Counter
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
@@ -15,14 +19,10 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ua_parser.Parser
 import java.io.File
+import java.io.Serializable
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.URI
-import java.time.Duration
-import java.time.LocalDateTime
-// Importar el counter
-//import io.micrometer.core.instrument.Counter
-
 
 //This site or product includes IP2Location LITE data available from
 // <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
@@ -114,6 +114,13 @@ class UrlShortenerControllerImpl(
 
     private val reader: DatabaseReader = DatabaseReader.Builder(database).build()
 
+    private val counter: Counter = Counter.builder("news_fetch_request_total").
+    tag("version", "v1").
+    description("News Fetch Count").
+    register(PrometheusMeterRegistry(PrometheusConfig.DEFAULT))
+
+
+
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
@@ -131,45 +138,49 @@ class UrlShortenerControllerImpl(
 
     // Registra una nueva redirección y devuelve true si el número de redirecciones supera el límite
     private fun limiteRedirecciones(id: String): Boolean {
+        // Printear el nombre del counter
+        println("El nombre del counter es: ${counter.id.name}")
+        println("Nueva redireccion")
+        counter.increment()
+        println("El contador es: ${counter.count()}")
 
-        
-        
-        // Obtener el límite de redirecciones permitido y el número actual de redirecciones
-        val limite = redirectLimitUseCase.obtainLimit(id)
-        val numRedirecciones = redirectLimitUseCase.obtainNumRedirects(id)
-        val horaAnterior = redirectLimitUseCase.obtenerHora(id)
-
-        // Verificar si hay un límite establecido
-        if (limite != 0) {
-            if (horaAnterior != null) {
-                // Obtener la hora actual
-                val horaActual = LocalDateTime.now()
-                val duracionTranscurrida = Duration.between(horaAnterior, horaActual)
-
-                println("La hora anterior es: $horaAnterior y la hora actual es: $horaActual")
-
-                // Verificar si ha pasado más de una hora desde la última redirección
-                if (duracionTranscurrida >= Duration.ofHours(1)) {
-                    // Se ha superado la duración máxima permitida, reiniciar contador y actualizar la hora
-                    redirectLimitUseCase.reiniciarNumRedirecciones(id)
-                    redirectLimitUseCase.actualizarHora(id, horaActual)
-                }
-            }
-
-            // Verificar que no se superen el número máximo de redirecciones permitidas
-            if (numRedirecciones >= limite) {
-                // Se ha alcanzado el limite de redirecciones
-                return true
-            }
-        }
-
-        // No hay límite de redirecciones o no se ha alcanzado el máximo permitido, registrar nueva redirección
-        redirectLimitUseCase.newRedirect(id)
-
-        // Imprimir información de depuración
-        println("El límite es: $limite y el número de redirecciones es: $numRedirecciones")
-
-        // Se ha alcanzado o superado el número máximo de redirecciones permitidas
+//        // Obtener el límite de redirecciones permitido y el número actual de redirecciones
+//        val limite = redirectLimitUseCase.obtainLimit(id)
+//        val numRedirecciones = redirectLimitUseCase.obtainNumRedirects(id)
+//        val horaAnterior = redirectLimitUseCase.obtenerHora(id)
+//
+//        // Verificar si hay un límite establecido
+//        if (limite != 0) {
+//            if (horaAnterior != null) {
+//                // Obtener la hora actual
+//                val horaActual = LocalDateTime.now()
+//                val duracionTranscurrida = Duration.between(horaAnterior, horaActual)
+//
+//                println("La hora anterior es: $horaAnterior y la hora actual es: $horaActual")
+//
+//                // Verificar si ha pasado más de una hora desde la última redirección
+//                if (duracionTranscurrida >= Duration.ofHours(1)) {
+//                    // Se ha superado la duración máxima permitida, reiniciar contador y actualizar la hora
+//                    redirectLimitUseCase.reiniciarNumRedirecciones(id)
+//                    redirectLimitUseCase.actualizarHora(id, horaActual)
+//                }
+//            }
+//
+//            // Verificar que no se superen el número máximo de redirecciones permitidas
+//            if (numRedirecciones >= limite) {
+//                // Se ha alcanzado el limite de redirecciones
+//                return true
+//            }
+//        }
+//
+//        // No hay límite de redirecciones o no se ha alcanzado el máximo permitido, registrar nueva redirección
+//        redirectLimitUseCase.newRedirect(id)
+//
+//        // Imprimir información de depuración
+//        println("El límite es: $limite y el número de redirecciones es: $numRedirecciones")
+//
+//        // Se ha alcanzado o superado el número máximo de redirecciones permitidas
+//        return false
         return false
     }
 
@@ -190,6 +201,7 @@ class UrlShortenerControllerImpl(
         } catch (e: NumberFormatException) {
             return ResponseEntity(HttpStatus.BAD_REQUEST)
         }
+
 
         val datos = ShortUrlProperties(
             ip = request.remoteAddr,
@@ -290,20 +302,29 @@ class UrlShortenerControllerImpl(
         return propiedades
     }
 
+    //para los casos de error.
+    //data class ErrorResponse(val error: String, val message: String)
+    data class ErrorResponse(val message: String)
 
     @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
-    fun returnQr(@PathVariable id: String): ResponseEntity<ByteArray> {
-        val qrUseCase = QrUseCaseImpl()
 
-        // Llamamos a la funcion del use case
+    fun returnQr(@PathVariable id: String, @RequestHeader(value = "User-Agent", required = false) userAgent: String?): ResponseEntity<out Serializable> {
+
         val imageBytes = qrUseCase.getQrImageBytes(id)
+        val status = qrUseCase.getCodeStatus(id)        //no hay nada en el mapa porque hemos creado la instancia arriba y entonces es normla que no tenga nada en el mapa. Hay que pasarle el mapa con los qr creados.
+        println("El valor del id: $id")
+        println("El estado del qr es: $status")
 
-        return if (imageBytes != null) {
-            ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
-        } else {
-            // Si no se encuentra la imagen, podrías llamar a la función generateQRCode aquí
-            // y devolver el nuevo código QR generado o manejarlo según tus necesidades.
-            ResponseEntity.notFound().build()
+        return when {
+            imageBytes != null -> ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
+            status == 1 -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .header("Retry-After", "60")
+                .body("Código QR en proceso de creación")
+            status == 2 -> ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Código QR inválido")
+            else -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Código QR no encontrado")
         }
     }
+
 }
