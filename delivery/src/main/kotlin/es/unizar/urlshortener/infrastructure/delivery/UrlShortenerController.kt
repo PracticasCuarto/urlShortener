@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport")
+@file:Suppress("WildcardImport", "MaxLineLength", "ReturnCount", "LongParameterList")
 package es.unizar.urlshortener.infrastructure.delivery
 
 import com.maxmind.geoip2.DatabaseReader
@@ -55,6 +55,7 @@ interface UrlShortenerController {
         data: ShortUrlDataIn,
         request: HttpServletRequest,
         @RequestParam(required = false, defaultValue = "0") limit: String,
+        @RequestParam(required = false, defaultValue = "false") hayQr: String,
     ): ResponseEntity<ShortUrlDataReapose>
 
     /**
@@ -106,7 +107,8 @@ class UrlShortenerControllerImpl(
     val returnSystemInfoUseCase: ReturnSystemInfoUseCase,
     //val metricsEndpoint: MetricsEndpoint
     val redirectLimitUseCase: RedirectLimitUseCase,
-    val isUrlReachableUseCase: IsUrlReachableUseCase
+    val isUrlReachableUseCase: IsUrlReachableUseCase,
+    val qrUseCase: QrUseCase                        //añadimos el nuevo UseCase del Qr
 
 ) : UrlShortenerController {
 
@@ -179,7 +181,9 @@ class UrlShortenerControllerImpl(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
         @RequestParam(required = false, defaultValue = "0") limit: String,
-    ): ResponseEntity<ShortUrlDataReapose> {
+        @RequestParam(required = false, defaultValue = "false") hayQr: String,
+
+        ): ResponseEntity<ShortUrlDataReapose> {
         val limiteInt: Int
         try {
             limiteInt = limit.toInt()
@@ -210,6 +214,19 @@ class UrlShortenerControllerImpl(
                 "safe" to result.properties.safe
             )
         )
+
+        // A partir de aqui es mio.
+
+        println("El hayQr es: $hayQr")
+
+        val p1 = qrUseCase.getCodeStatus(result.hash)
+        println("Valor antes de crear el Qr: $p1")
+        if (hayQr == "true") {
+            qrUseCase.generateQRCode(url.toString(), result.hash)
+
+        }
+        val p3 = qrUseCase.getCodeStatus(result.hash)
+        println("Valor despues crear el Qr: $p3")
 
         // comprobamos si la URL es alcanzable
         if (isUrlReachableUseCase.isUrlReachable(data.url) != HttpURLConnection.HTTP_OK) {
@@ -270,5 +287,21 @@ class UrlShortenerControllerImpl(
             browser = browser, country = countryIsoCode, city = cityName
         )
         return propiedades
+    }
+
+    @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
+    fun returnQr(@PathVariable id: String): ResponseEntity<ByteArray> {
+        val qrUseCase = QrUseCaseImpl()
+
+        // Llamamos a la funcion del use case
+        val imageBytes = qrUseCase.getQrImageBytes(id)
+
+        return if (imageBytes != null) {
+            ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
+        } else {
+            // Si no se encuentra la imagen, podrías llamar a la función generateQRCode aquí
+            // y devolver el nuevo código QR generado o manejarlo según tus necesidades.
+            ResponseEntity.notFound().build()
+        }
     }
 }

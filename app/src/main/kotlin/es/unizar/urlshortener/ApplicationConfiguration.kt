@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport", "ForbiddenComment")
+@file:Suppress("WildcardImport", "ForbiddenComment","TooManyFunctions")
 
 package es.unizar.urlshortener
 
@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.actuate.metrics.MetricsEndpoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import es.unizar.urlshortener.core.usecases.QrUseCaseImpl       //Esto lo implementamos al crear el use case del qr
+
 
 /**
  * Wires use cases with service implementations, and services implementations with repositories.
@@ -58,5 +60,8 @@ class ApplicationConfiguration(
 
     @Bean
     fun isUrlReachableUseCase() = IsUrlReachableUseCaseImpl()
+
+    @Bean
+    fun qrUseCase() = QrUseCaseImpl()
 
 }
