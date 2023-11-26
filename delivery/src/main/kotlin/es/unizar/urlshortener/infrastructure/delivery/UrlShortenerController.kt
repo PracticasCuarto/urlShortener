@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport")
+@file:Suppress("WildcardImport", "MaxLineLength", "ReturnCount", "LongParameterList")
 package es.unizar.urlshortener.infrastructure.delivery
 
 import com.maxmind.geoip2.DatabaseReader
@@ -14,18 +14,12 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ua_parser.Parser
-import ua_parser.Client
 import java.io.File
+import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.URI
-import com.maxmind.db.Reader
-import org.springframework.web.bind.annotation.*
-import java.io.FileNotFoundException
-import java.net.HttpURLConnection
-
-import java.time.LocalDateTime
 import java.time.Duration
-import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 
 //This site or product includes IP2Location LITE data available from
 // <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.

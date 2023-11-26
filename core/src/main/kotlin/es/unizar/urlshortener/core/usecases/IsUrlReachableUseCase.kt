@@ -1,3 +1,5 @@
+@file:Suppress("MagicNumber", "TooGenericExceptionCaught")
+
 package es.unizar.urlshortener.core.usecases
 
 import java.net.HttpURLConnection

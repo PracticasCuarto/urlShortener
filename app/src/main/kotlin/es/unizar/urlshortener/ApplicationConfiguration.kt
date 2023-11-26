@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport", "ForbiddenComment")
+@file:Suppress("WildcardImport", "ForbiddenComment", "TooManyFunctions")
 
 package es.unizar.urlshortener
 
