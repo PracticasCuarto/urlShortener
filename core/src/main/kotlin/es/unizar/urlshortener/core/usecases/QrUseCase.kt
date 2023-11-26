@@ -12,10 +12,10 @@ interface QrUseCase {
     fun getCodeStatus(hash: String): Int
 }
 
-class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr",private val qrCodeStatusMap: MutableMap<String, Boolean> = mutableMapOf()) : QrUseCase {
+class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCase {
 
     // Mapa para rastrear el estado de los códigos QR
-    //private val qrCodeStatusMap: MutableMap<String, Boolean> = mutableMapOf()
+    private val qrCodeStatusMap: MutableMap<String, Boolean> = mutableMapOf()
 
     override fun generateQRCode(url: String, hash: String): ByteArray {
         val byteArrayOutputStream = ByteArrayOutputStream()
@@ -28,8 +28,8 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr",private va
         // Marcar el código QR como "en proceso de creación"
         qrCodeStatusMap[hash] = true
 
-        val p1 = getCodeStatus(hash)
-        println("Valor antes durante el Qr: $p1")
+        //val p1 = getCodeStatus(hash)
+        //println("Valor antes durante el Qr: $p1")
 
         // Sleep de 5 segundos para simular el tiempo de creación del código QR
         //Thread.sleep(15000)
@@ -59,9 +59,6 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr",private va
         qrCodeStatusMap.forEach { (key, value) ->
             println("$key: $value")
         }
-
-        println("Lo contiene??: ${qrCodeStatusMap.containsKey(hash)}")
-        println("Lo contiene??: ${qrCodeStatusMap[hash]}")
 
         return when {
             qrCodeStatusMap.containsKey(hash) && qrCodeStatusMap[hash] == true -> 1 // En proceso de creación
