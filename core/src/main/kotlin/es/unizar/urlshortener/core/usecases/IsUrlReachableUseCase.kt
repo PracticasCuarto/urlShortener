@@ -1,9 +1,15 @@
-@file:Suppress("WildcardImport","TooManyFunctions","TooGenericExceptionCaught","MagicNumber","NewLineAtEndOfFile")
-
 package es.unizar.urlshortener.core.usecases
 
+import java.io.IOException
 import java.net.HttpURLConnection
+import java.net.MalformedURLException
 import java.net.URL
+
+/*
+ * Privet global variables
+ */
+private const val MAX_ATTEMPTS = 3
+private const val WAIT_TIME = 1000L
 
 /**
  * Given an url in string format, returns an int that represents the status code of the url.
@@ -17,31 +23,45 @@ interface IsUrlReachableUseCase {
 /**
  * Implementation of [IsUrlReachableUseCase].
  */
-class IsUrlReachableUseCaseImpl : IsUrlReachableUseCase {
+class IsUrlReachableUseCaseImpl(val connect: (it:String) -> Int = {
+    val url = URL(it)
+    val connection = url.openConnection() as HttpURLConnection
+    // connection.requestMethod = "GET"
+    //connection.connectTimeout = 5000 // Tiempo de espera en milisegundos
+
+    connection.responseCode
+
+}) : IsUrlReachableUseCase {
     override fun isUrlReachable(urlString: String): Int {
         var attempt = 0
-        val maxAttempts = 3
-        while (attempt < maxAttempts) {
+        while (attempt < MAX_ATTEMPTS) {
             try {
-                val url = URL(urlString)
-                val connection = url.openConnection() as HttpURLConnection
-                // connection.requestMethod = "GET"
-                //connection.connectTimeout = 5000 // Tiempo de espera en milisegundos
-
-                val responseCode = connection.responseCode
+                val responseCode = connect(urlString)
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     return HttpURLConnection.HTTP_OK
                 } else {
                     attempt++
-                    Thread.sleep(1000) // Espacio de 1 segundo entre intentos
+                    Thread.sleep(WAIT_TIME) // Espacio de 1 segundo entre intentos
                 }
-            } catch (e: Exception) {
-                // Log o manejo de la excepción si es necesario
+            } catch (malformedURLException: MalformedURLException) {
+                // Manejar la URL mal formada
+                println("URL mal formada")
+            } catch (ioException: IOException) {
+                // Manejar problemas de entrada/salida durante la conexión
+                println("Error de E/S al conectar con la URL: ${ioException.message}")
                 attempt++
-                Thread.sleep(1000) // Espacio de 1 segundo entre intentos
-                println("Error al verificar la URL: ${e.message} en el intento $attempt")
-            }
+                Thread.sleep(WAIT_TIME) // Espacio de 1 segundo entre intentos
+           }
         }
         return HttpURLConnection.HTTP_BAD_REQUEST
     }
 }
+
+val isUrlReachableUseCaseGoodMock = IsUrlReachableUseCaseImpl( {HttpURLConnection.HTTP_OK })
+val isUrlReachableUseCaseBadMock = IsUrlReachableUseCaseImpl( {HttpURLConnection.HTTP_BAD_REQUEST })
+
+
+// La parte de probar la conexion 3 veces hacerla una interfaz y que esta implementacion actual que sea una
+// implementacion concreta
+// A parte poder tener otras implementaciones especiales que sirvan para los tests (una devuelve siempre bien,
+// otra siempre mal, otra que a la tercera devuelve bien, etc) Hacerlo en app o delivery
