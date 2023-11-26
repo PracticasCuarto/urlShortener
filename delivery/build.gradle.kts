@@ -19,7 +19,7 @@ dependencies {
     //implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-actuator:3.1.3")
 
-
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")

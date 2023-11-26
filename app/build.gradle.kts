@@ -13,6 +13,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     runtimeOnly("org.hsqldb:hsqldb")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-web")

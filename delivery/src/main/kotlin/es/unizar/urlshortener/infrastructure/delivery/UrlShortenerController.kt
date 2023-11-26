@@ -20,6 +20,9 @@ import java.net.InetAddress
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDateTime
+// Importar el counter
+//import io.micrometer.core.instrument.Counter
+
 
 //This site or product includes IP2Location LITE data available from
 // <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
@@ -128,6 +131,9 @@ class UrlShortenerControllerImpl(
 
     // Registra una nueva redirección y devuelve true si el número de redirecciones supera el límite
     private fun limiteRedirecciones(id: String): Boolean {
+
+        
+        
         // Obtener el límite de redirecciones permitido y el número actual de redirecciones
         val limite = redirectLimitUseCase.obtainLimit(id)
         val numRedirecciones = redirectLimitUseCase.obtainNumRedirects(id)
@@ -235,6 +241,7 @@ class UrlShortenerControllerImpl(
             println("La URL es alcanzable")
         }
 
+        
         return ResponseEntity(response, h, HttpStatus.CREATED)
     }
 
@@ -282,6 +289,7 @@ class UrlShortenerControllerImpl(
         )
         return propiedades
     }
+
 
     @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
     fun returnQr(@PathVariable id: String): ResponseEntity<ByteArray> {
