@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport","UnusedParameter","MagicNumber")
+@file:Suppress("WildcardImport","UnusedParameter","MagicNumber","MaxLineLength")
 package es.unizar.urlshortener.core.usecases
 
 import net.glxn.qrgen.javase.QRCode
@@ -12,10 +12,10 @@ interface QrUseCase {
     fun getCodeStatus(hash: String): Int
 }
 
-class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCase {
+class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr",private val qrCodeStatusMap: MutableMap<String, Boolean> = mutableMapOf()) : QrUseCase {
 
     // Mapa para rastrear el estado de los códigos QR
-    private val qrCodeStatusMap: MutableMap<String, Boolean> = mutableMapOf()
+    //private val qrCodeStatusMap: MutableMap<String, Boolean> = mutableMapOf()
 
     override fun generateQRCode(url: String, hash: String): ByteArray {
         val byteArrayOutputStream = ByteArrayOutputStream()
@@ -31,11 +31,12 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCa
         val p1 = getCodeStatus(hash)
         println("Valor antes durante el Qr: $p1")
 
+
         // Guardar el código QR en el archivo
         File(outputPath).writeBytes(byteArray)
 
         // Marcar el código QR como "creado"
-        qrCodeStatusMap[hash] = false
+        //qrCodeStatusMap[hash] = false
 
         return byteArray
     }
@@ -51,6 +52,14 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCa
     }
 
     override fun getCodeStatus(hash: String): Int {
+        println("Valores actuales del mapa al entrar a getCodeStatus:")
+        qrCodeStatusMap.forEach { (key, value) ->
+            println("$key: $value")
+        }
+
+        println("Lo contiene??: ${qrCodeStatusMap.containsKey(hash)}")
+        println("Lo contiene??: ${qrCodeStatusMap[hash]}")
+
         return when {
             qrCodeStatusMap.containsKey(hash) && qrCodeStatusMap[hash] == true -> 1 // En proceso de creación
             qrCodeStatusMap.containsKey(hash) && qrCodeStatusMap[hash] == false -> 2 // Creado

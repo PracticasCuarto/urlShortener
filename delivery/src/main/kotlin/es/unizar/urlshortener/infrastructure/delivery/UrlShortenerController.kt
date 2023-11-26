@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport", "MaxLineLength", "ReturnCount", "LongParameterList")
+@file:Suppress("WildcardImport", "MaxLineLength", "ReturnCount", "LongParameterList","UnusedParameter","MaxLineLength")
 package es.unizar.urlshortener.infrastructure.delivery
 
 import com.maxmind.geoip2.DatabaseReader
@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ua_parser.Parser
 import java.io.File
+import java.io.Serializable
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.URI
@@ -191,6 +192,7 @@ class UrlShortenerControllerImpl(
             return ResponseEntity(HttpStatus.BAD_REQUEST)
         }
 
+
         val datos = ShortUrlProperties(
             ip = request.remoteAddr,
             sponsor = data.sponsor,
@@ -290,20 +292,27 @@ class UrlShortenerControllerImpl(
         return propiedades
     }
 
+    //para los casos de error.
+    //data class ErrorResponse(val error: String, val message: String)
+    data class ErrorResponse(val message: String)
 
     @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
-    fun returnQr(@PathVariable id: String): ResponseEntity<ByteArray> {
-        val qrUseCase = QrUseCaseImpl()
+    fun returnQr(@PathVariable id: String, @RequestHeader(value = "User-Agent", required = false) userAgent: String?): ResponseEntity<out Serializable> {
 
-        // Llamamos a la funcion del use case
         val imageBytes = qrUseCase.getQrImageBytes(id)
+        val status = qrUseCase.getCodeStatus(id)        //no hay nada en el mapa porque hemos creado la instancia arriba y entonces es normla que no tenga nada en el mapa. Hay que pasarle el mapa con los qr creados.
+        println("El valor del id: $id")
+        println("El estado del qr es: $status")
 
-        return if (imageBytes != null) {
-            ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
-        } else {
-            // Si no se encuentra la imagen, podrías llamar a la función generateQRCode aquí
-            // y devolver el nuevo código QR generado o manejarlo según tus necesidades.
-            ResponseEntity.notFound().build()
+        return when {
+            imageBytes != null -> ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
+            status == 1 -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .header("Retry-After", "60")
+                .body("Código QR en proceso de creación")
+            status == 2 -> ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Código QR inválido")
+            else -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("Código QR no encontrado")
         }
     }
 }
