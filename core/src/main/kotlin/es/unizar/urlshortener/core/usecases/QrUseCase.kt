@@ -31,12 +31,14 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr",private va
         val p1 = getCodeStatus(hash)
         println("Valor antes durante el Qr: $p1")
 
+        // Sleep de 5 segundos para simular el tiempo de creación del código QR
+        //Thread.sleep(15000)
 
         // Guardar el código QR en el archivo
         File(outputPath).writeBytes(byteArray)
 
         // Marcar el código QR como "creado"
-        //qrCodeStatusMap[hash] = false
+        qrCodeStatusMap[hash] = false
 
         return byteArray
     }

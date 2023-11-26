@@ -1,11 +1,11 @@
+@file:Suppress("EmptyDefaultConstructor", "UnusedPrivateProperty")
 /**
  * Package containing use cases related to the core functionality of URL shortener.
  */
 package es.unizar.urlshortener.core.usecases
 
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import io.micrometer.core.instrument.Counter
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 /**
  * Use case interface for managing redirection limits and statistics.
@@ -13,39 +13,28 @@ import java.time.format.DateTimeFormatter
 interface RedirectLimitUseCase {
 
     /**
-     * Returns the allowed redirection limit for a given hash.
-     *
-     * @param hash The hash associated with the shortened link.
-     * @return The allowed redirection limit.
-     */
-    fun obtainLimit(hash: String): Int
-
-    /**
-     * Returns the total number of redirects in the last hour for a given hash.
-     *
-     * @param hash The hash associated with the shortened link.
-     * @return The total number of redirects in the last hour.
-     */
-    fun obtainNumRedirects(hash: String): Int
-
-    /**
      * Checks if a new redirection is allowed, and updates the total number of redirects if allowed.
      *
      * @param hash The hash associated with the shortened link.
      */
-    fun newRedirect(hash: String)
+    fun newRedirect(hash: String) : Boolean
 
-    /**
-     * Resets the amount of redirects for a given hash in the last hour.
-     *
-     * @param hash The hash associated with the shortened link.
-     */
-    fun reiniciarNumRedirecciones(hash: String)
-
-    fun obtenerHora(hash: String): LocalDateTime?
-
-    fun actualizarHora(hash: String, hora: LocalDateTime)
 }
+
+/**
+ * Data class representing information about the redirects of a given url
+ * @property hash Hash associated with the shortened link.
+ * @property time Time of the last redirect.
+ * @property counter Number of redirects in the last hour.
+ * @property limit Maximum number of redirects allowed in an hour (0 if no limit)
+ **/
+
+data class Redirects(
+    val hash: String? = null,
+    val time: LocalDateTime? = null,
+    val counter: Counter? = null,
+    val limit: Int? = 0
+)
 
 /**
  * Implementation of the [RedirectLimitUseCase] interface.
@@ -53,48 +42,51 @@ interface RedirectLimitUseCase {
  * @property shortUrlRepository Service for accessing short URL-related data in the repository.
  */
 class RedirectLimitUseCaseImpl(
-    private val shortUrlRepository: ShortUrlRepositoryService
 ) : RedirectLimitUseCase {
 
-    /**
-     * Returns the allowed redirection limit for a given hash.
-     *
-     * @param hash The hash associated with the shortened link.
-     * @return The allowed redirection limit.
-     */
-    override fun obtainLimit(hash: String): Int {
-        return shortUrlRepository.obtainLimit(hash)
-    }
-
-    /**
-     * Returns the total number of redirects in the last hour for a given hash.
-     *
-     * @param hash The hash associated with the shortened link.
-     * @return The total number of redirects in the last hour.
-     */
-    override fun obtainNumRedirects(hash: String): Int {
-        return shortUrlRepository.obtenerNumRedirecciones(hash)
-    }
+    // Lista para almacenar redirecciones
+    private val redirectsList = mutableListOf<Redirects>()
 
     /**
      * Checks if a new redirection is allowed, and updates the total number of redirects if allowed.
      *
      * @param hash The hash associated with the shortened link.
      */
-    override fun newRedirect(hash: String) {
-        val numRedirecciones: Int = shortUrlRepository.obtenerNumRedirecciones(hash)
-        shortUrlRepository.actualizarNumRedirecciones(hash, numRedirecciones + 1)
+    override fun newRedirect(hash: String) : Boolean {
+        val exists = findRedirectByHash(hash)
+        if (!exists) {
+            // Si no existe no hacemos nada
+            return false
+        }
+
+        val redirect = obtainRedirectByHash(hash)
+
+        // Obtener el numero de veces que se ha hecho la redireccion
+        val numRedirecciones = redirect?.counter?.count()?.toInt()
+        return false
     }
 
-    override fun reiniciarNumRedirecciones(hash: String) {
-        shortUrlRepository.reiniciarNumRedirecciones(hash)
+    // Función para buscar un elemento en la lista por hash
+    private fun findRedirectByHash(hashActual: String): Boolean {
+        return redirectsList.any { it.hash == hashActual }
     }
 
-    override fun obtenerHora(hash: String): LocalDateTime? {
-        return shortUrlRepository.obtenerHoraRedireccion(hash)
+    // Función para buscar un elemento en la lista por hash
+    private fun obtainRedirectByHash(hashActual: String): Redirects? {
+        return redirectsList.find { it.hash == hashActual }
     }
 
-    override fun actualizarHora(hash: String, hora: LocalDateTime) {
-        shortUrlRepository.actualizarHoraRedireccion(hash, hora)
-    }
+
 }
+
+//private val counter: Counter = Counter.builder("news_fetch_request_total").
+//tag("version", "v1").
+//description("News Fetch Count").
+//register(PrometheusMeterRegistry(PrometheusConfig.DEFAULT))
+
+// Printear el nombre del counter
+//println("El nombre del counter es: ${counter.id.name}")
+//println("Nueva redireccion")
+//counter.increment()
+//println("El contador es: ${counter.count()}")
+

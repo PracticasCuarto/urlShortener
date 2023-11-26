@@ -56,7 +56,7 @@ class ApplicationConfiguration(
     @Bean
     fun returnSystemInfoUseCase() = ReturnSystemInfoUseCaseImpl(metricsEndpoint)
     @Bean
-    fun redirectLimitUseCase() = RedirectLimitUseCaseImpl(shortUrlRepositoryService())
+    fun redirectLimitUseCase() = RedirectLimitUseCaseImpl()
 
     @Bean
     fun isUrlReachableUseCase() = IsUrlReachableUseCaseImpl()
