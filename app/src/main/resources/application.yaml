@@ -14,9 +14,13 @@ spring:
 # Actuator Endpoints
 management:
   endpoints:
+    enabled-by-default: true
     web:
       exposure:
-        include: health,metrics
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
   metrics:
     enable:
       uptime: true

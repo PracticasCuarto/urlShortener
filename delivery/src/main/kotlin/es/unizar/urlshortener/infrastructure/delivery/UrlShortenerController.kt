@@ -7,7 +7,6 @@ import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.*
 import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import jakarta.servlet.http.HttpServletRequest
@@ -22,8 +21,6 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.URI
-import java.time.Duration
-import java.time.LocalDateTime
 
 //This site or product includes IP2Location LITE data available from
 // <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
@@ -115,16 +112,19 @@ class UrlShortenerControllerImpl(
 
     private val reader: DatabaseReader = DatabaseReader.Builder(database).build()
 
-    private var counter: Counter? = null
+    private val counter: Counter = Counter.builder("news_fetch_request_total").
+    tag("version", "v1").
+    description("News Fetch Count").
+    register(PrometheusMeterRegistry(PrometheusConfig.DEFAULT))
+
+
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
         val propiedades = obtenerInformacionUsuario(userAgent, request)
 
-        val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
-
-        if (limiteRedirecciones(id, registry)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
+        if (limiteRedirecciones(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, propiedades)
@@ -135,48 +135,50 @@ class UrlShortenerControllerImpl(
     }
 
     // Registra una nueva redirección y devuelve true si el número de redirecciones supera el límite
-    private fun limiteRedirecciones(id: String, registry: MeterRegistry): Boolean {
+    private fun limiteRedirecciones(id: String): Boolean {
+        // Printear el nombre del counter
+        println("El nombre del counter es: ${counter.id.name}")
+        println("Nueva redireccion")
+        counter.increment()
+        println("El contador es: ${counter.count()}")
 
-        this.counter = Counter.builder("news_fetch_request_total").
-        tag("version", "v1").
-        description("News Fetch Count").register(registry)
-
-        // Obtener el límite de redirecciones permitido y el número actual de redirecciones
-        val limite = redirectLimitUseCase.obtainLimit(id)
-        val numRedirecciones = redirectLimitUseCase.obtainNumRedirects(id)
-        val horaAnterior = redirectLimitUseCase.obtenerHora(id)
-
-        // Verificar si hay un límite establecido
-        if (limite != 0) {
-            if (horaAnterior != null) {
-                // Obtener la hora actual
-                val horaActual = LocalDateTime.now()
-                val duracionTranscurrida = Duration.between(horaAnterior, horaActual)
-
-                println("La hora anterior es: $horaAnterior y la hora actual es: $horaActual")
-
-                // Verificar si ha pasado más de una hora desde la última redirección
-                if (duracionTranscurrida >= Duration.ofHours(1)) {
-                    // Se ha superado la duración máxima permitida, reiniciar contador y actualizar la hora
-                    redirectLimitUseCase.reiniciarNumRedirecciones(id)
-                    redirectLimitUseCase.actualizarHora(id, horaActual)
-                }
-            }
-
-            // Verificar que no se superen el número máximo de redirecciones permitidas
-            if (numRedirecciones >= limite) {
-                // Se ha alcanzado el limite de redirecciones
-                return true
-            }
-        }
-
-        // No hay límite de redirecciones o no se ha alcanzado el máximo permitido, registrar nueva redirección
-        redirectLimitUseCase.newRedirect(id)
-
-        // Imprimir información de depuración
-        println("El límite es: $limite y el número de redirecciones es: $numRedirecciones")
-
-        // Se ha alcanzado o superado el número máximo de redirecciones permitidas
+//        // Obtener el límite de redirecciones permitido y el número actual de redirecciones
+//        val limite = redirectLimitUseCase.obtainLimit(id)
+//        val numRedirecciones = redirectLimitUseCase.obtainNumRedirects(id)
+//        val horaAnterior = redirectLimitUseCase.obtenerHora(id)
+//
+//        // Verificar si hay un límite establecido
+//        if (limite != 0) {
+//            if (horaAnterior != null) {
+//                // Obtener la hora actual
+//                val horaActual = LocalDateTime.now()
+//                val duracionTranscurrida = Duration.between(horaAnterior, horaActual)
+//
+//                println("La hora anterior es: $horaAnterior y la hora actual es: $horaActual")
+//
+//                // Verificar si ha pasado más de una hora desde la última redirección
+//                if (duracionTranscurrida >= Duration.ofHours(1)) {
+//                    // Se ha superado la duración máxima permitida, reiniciar contador y actualizar la hora
+//                    redirectLimitUseCase.reiniciarNumRedirecciones(id)
+//                    redirectLimitUseCase.actualizarHora(id, horaActual)
+//                }
+//            }
+//
+//            // Verificar que no se superen el número máximo de redirecciones permitidas
+//            if (numRedirecciones >= limite) {
+//                // Se ha alcanzado el limite de redirecciones
+//                return true
+//            }
+//        }
+//
+//        // No hay límite de redirecciones o no se ha alcanzado el máximo permitido, registrar nueva redirección
+//        redirectLimitUseCase.newRedirect(id)
+//
+//        // Imprimir información de depuración
+//        println("El límite es: $limite y el número de redirecciones es: $numRedirecciones")
+//
+//        // Se ha alcanzado o superado el número máximo de redirecciones permitidas
+//        return false
         return false
     }
 
