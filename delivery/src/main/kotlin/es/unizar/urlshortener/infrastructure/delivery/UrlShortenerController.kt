@@ -104,7 +104,7 @@ class UrlShortenerControllerImpl(
     val returnSystemInfoUseCase: ReturnSystemInfoUseCase,
     //val metricsEndpoint: MetricsEndpoint
     val redirectLimitUseCase: RedirectLimitUseCase,
-    val isUrlReachableUseCase: IsUrlReachableUseCase,
+    var isUrlReachableUseCase: IsUrlReachableUseCase,
     val qrUseCase: QrUseCase                        //añadimos el nuevo UseCase del Qr
 
 ) : UrlShortenerController {

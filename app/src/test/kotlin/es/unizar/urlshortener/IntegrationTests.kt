@@ -3,6 +3,8 @@
 package es.unizar.urlshortener
 
 import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataOut
+import es.unizar.urlshortener.infrastructure.delivery.Error
+import es.unizar.urlshortener.infrastructure.delivery.UrlShortenerControllerImpl
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -23,6 +25,10 @@ import org.springframework.util.MultiValueMap
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import java.net.URI
+import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseGoodMock
+import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseBadMock
+import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataReapose
+
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 class HttpRequestTest {
@@ -34,6 +40,9 @@ class HttpRequestTest {
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
+
+    @Autowired
+    private lateinit var urlShortenerController: UrlShortenerControllerImpl
 
     @BeforeEach
     fun setup() {
@@ -148,7 +157,7 @@ class HttpRequestTest {
 
     @Test
     fun `redirectTo adds to the database the ip and the location of the user for non-existent short URL`() {
-        // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada,Barcelona
+        // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada, Barcelona
         val specifiedIp = "188.77.145.43"
         val target = shortUrl("http://www.mcdonaldsnoessano.com/").headers.location
         val headers = HttpHeaders()
@@ -228,4 +237,39 @@ class HttpRequestTest {
             ShortUrlDataOut::class.java
         )
     }
+
+    @Test
+    fun `shortener returns a shortened URL when the URL is reachable`() {
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock
+
+        // Configure the controller to use the reachableMock
+        urlShortenerController.isUrlReachableUseCase = reachableMock
+
+        // Perform the shortening operation
+        val response = shortUrl("http://example.com/")
+
+        // Assertions
+        assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+        assertThat(response.headers.location).isNotNull
+        assertThat(response.body?.url).isEqualTo(response.headers.location)
+    }
+
+    @Test
+    fun `shortener returns an error when the URL is not reachable`() {
+        // URL not reachable mock
+        val notReachableMock = isUrlReachableUseCaseBadMock
+
+        // Configure the controller to use the notReachableMock
+        urlShortenerController.isUrlReachableUseCase = notReachableMock
+
+        // Perform the shortening operation
+        val response = shortUrl("http://example.com/")
+
+        // Assertions
+        assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
+        assertThat(response.headers.location).isNull()
+        assertThat(response.body?.url).isEqualTo(null)
+    }
+
 }
