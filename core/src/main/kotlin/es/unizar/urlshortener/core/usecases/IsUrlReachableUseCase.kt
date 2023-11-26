@@ -1,4 +1,5 @@
 @file:Suppress("WildcardImport","TooManyFunctions","TooGenericExceptionCaught","MagicNumber","NewLineAtEndOfFile")
+
 package es.unizar.urlshortener.core.usecases
 
 import java.net.HttpURLConnection
