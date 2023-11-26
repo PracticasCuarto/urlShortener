@@ -116,7 +116,7 @@ class UrlShortenerControllerImpl(
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
         val propiedades = obtenerInformacionUsuario(userAgent, request)
 
-        if (limiteRedirecciones(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
+        if (!redirectLimitUseCase.newRedirect(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, propiedades)
@@ -125,12 +125,6 @@ class UrlShortenerControllerImpl(
             return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
         }
     }
-
-    // Registra una nueva redirección y devuelve true si el número de redirecciones supera el límite
-    private fun limiteRedirecciones(id: String): Boolean {
-        return false
-    }
-
 
     // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
 
@@ -142,30 +136,21 @@ class UrlShortenerControllerImpl(
         @RequestParam(required = false, defaultValue = "true") hayQr: String,
 
         ): ResponseEntity<ShortUrlDataReapose> {
-        println("Valor de data: ${data.url}")
-        println("Valor de limit: $limit")
-        println("Valor de hayQr: $hayQr")
 
-        val limiteInt: Int
-        try {
-            limiteInt = limit.toInt()
-        } catch (e: NumberFormatException) {
-            return ResponseEntity(HttpStatus.BAD_REQUEST)
-        }
-
-
-        val datos = ShortUrlProperties(
-            ip = request.remoteAddr,
-            sponsor = data.sponsor,
-            limit = limiteInt,
-            numRedirecciones = 0,
-            horaRedireccion = null // Cambiar por LocalDateTime.now() para activar el límite de redirecciones
-        )
+        var limiteInt: Int = limiteAEntero(limit)
 
         val result = createShortUrlUseCase.create(
             url = data.url,
-            data = datos
+            data = ShortUrlProperties(
+                ip = request.remoteAddr,
+                sponsor = data.sponsor,
+                limit = limiteInt
+            )
         )
+
+        if (limiteInt >= 0) {
+            redirectLimitUseCase.addNewRedirect(result.hash, limiteInt)
+        }
 
         val h = HttpHeaders()
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(result.hash, request) }.toUri()
@@ -180,28 +165,33 @@ class UrlShortenerControllerImpl(
 
         // A partir de aqui es mio.
 
-        val p1 = qrUseCase.getCodeStatus(result.hash)
         if (hayQr == "true") {
             qrUseCase.generateQRCode(url.toString(), result.hash)
         }
-        val p3 = qrUseCase.getCodeStatus(result.hash)
-        println("Valor despues crear el Qr: $p3")
 
         // comprobamos si la URL es alcanzable
         if (isUrlReachableUseCase.isUrlReachable(data.url) != HttpURLConnection.HTTP_OK) {
             println("La URL no es alcanzable")
-            val response = Error(
+            val response1 = Error(
                 statusCode = HttpStatus.BAD_REQUEST.value(),
                 message = "URI de destino no alcanzable"
             )
-            return ResponseEntity(response,HttpStatus.BAD_REQUEST)
+            return ResponseEntity(response1,HttpStatus.BAD_REQUEST)
         }
         else {
             println("La URL es alcanzable")
         }
-
         
         return ResponseEntity(response, h, HttpStatus.CREATED)
+    }
+
+    // Función para convertir el límite a entero
+    private fun limiteAEntero(limit: String): Int {
+        try {
+            return limit.toInt()
+        } catch (e: NumberFormatException) {
+            return 0
+        }
     }
 
     @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
