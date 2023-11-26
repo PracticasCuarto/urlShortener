@@ -1,4 +1,4 @@
-@file:Suppress("WildcardImport", "MaxLineLength", "ReturnCount", "LongParameterList")
+@file:Suppress("WildcardImport", "MaxLineLength", "ReturnCount", "LongParameterList", "UnusedPrivateProperty", "UnusedParameter")
 package es.unizar.urlshortener.infrastructure.delivery
 
 import com.maxmind.geoip2.DatabaseReader
@@ -6,6 +6,10 @@ import com.maxmind.geoip2.model.CityResponse
 import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.*
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
@@ -20,9 +24,6 @@ import java.net.InetAddress
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDateTime
-// Importar el counter
-//import io.micrometer.core.instrument.Counter
-
 
 //This site or product includes IP2Location LITE data available from
 // <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
@@ -114,12 +115,16 @@ class UrlShortenerControllerImpl(
 
     private val reader: DatabaseReader = DatabaseReader.Builder(database).build()
 
+    private var counter: Counter? = null
+
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
         val propiedades = obtenerInformacionUsuario(userAgent, request)
 
-        if (limiteRedirecciones(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
+        val registry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+
+        if (limiteRedirecciones(id, registry)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, propiedades)
@@ -130,10 +135,12 @@ class UrlShortenerControllerImpl(
     }
 
     // Registra una nueva redirección y devuelve true si el número de redirecciones supera el límite
-    private fun limiteRedirecciones(id: String): Boolean {
+    private fun limiteRedirecciones(id: String, registry: MeterRegistry): Boolean {
 
-        
-        
+        this.counter = Counter.builder("news_fetch_request_total").
+        tag("version", "v1").
+        description("News Fetch Count").register(registry)
+
         // Obtener el límite de redirecciones permitido y el número actual de redirecciones
         val limite = redirectLimitUseCase.obtainLimit(id)
         val numRedirecciones = redirectLimitUseCase.obtainNumRedirects(id)
@@ -292,18 +299,17 @@ class UrlShortenerControllerImpl(
 
 
     @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
-    fun returnQr(@PathVariable id: String): ResponseEntity<ByteArray> {
+    fun returnQr(@PathVariable id: String, @RequestHeader(value = "User-Agent", required = false) userAgent: String?): ResponseEntity<Any> {
         val qrUseCase = QrUseCaseImpl()
 
-        // Llamamos a la funcion del use case
         val imageBytes = qrUseCase.getQrImageBytes(id)
+        val status = qrUseCase.getCodeStatus(id)
 
-        return if (imageBytes != null) {
-            ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
-        } else {
-            // Si no se encuentra la imagen, podrías llamar a la función generateQRCode aquí
-            // y devolver el nuevo código QR generado o manejarlo según tus necesidades.
-            ResponseEntity.notFound().build()
+        return when {
+            imageBytes != null -> ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
+            status == 1 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).header("Retry-After", "60").body("Código QR en proceso de creación")
+            status == 2 -> ResponseEntity.status(HttpStatus.FORBIDDEN).body("Código QR inválido") //Invalido  porque si existiene habria imagenBytes != null y habria entrado antes.
+            else -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Código QR no encontrado")
         }
     }
 }

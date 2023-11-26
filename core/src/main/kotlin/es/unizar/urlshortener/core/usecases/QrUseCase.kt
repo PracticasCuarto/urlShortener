@@ -1,8 +1,8 @@
 @file:Suppress("WildcardImport","UnusedParameter","MagicNumber")
 package es.unizar.urlshortener.core.usecases
 
-import net.glxn.qrgen.javase.QRCode
 import net.glxn.qrgen.core.image.ImageType
+import net.glxn.qrgen.javase.QRCode
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -46,6 +46,7 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCa
         return if (qrImagePath.exists()) {
             qrImagePath.readBytes()
         } else {
+            // No existe en la base de datos, devolverá una respuesta de tipo 404
             null
         }
     }
