@@ -140,6 +140,10 @@ class UrlShortenerControllerImpl(
 
         var limiteInt: Int = limiteAEntero(limit)
 
+        if (limiteInt < 0) {
+            return ResponseEntity(Error(HttpStatus.BAD_REQUEST.value(), "El límite debe ser mayor o igual que 0"), HttpStatus.BAD_REQUEST)
+        }
+
         val result = createShortUrlUseCase.create(
             url = data.url,
             data = ShortUrlProperties(
@@ -149,11 +153,7 @@ class UrlShortenerControllerImpl(
             )
         )
 
-        if (limiteInt >= 0) {
-            redirectLimitUseCase.addNewRedirect(result.hash, limiteInt)
-        } else {
-            return ResponseEntity(Error(HttpStatus.BAD_REQUEST.value(), "El límite debe ser mayor o igual que 0"), HttpStatus.BAD_REQUEST)
-        }
+        redirectLimitUseCase.addNewRedirect(result.hash, limiteInt)
 
         val h = HttpHeaders()
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(result.hash, request) }.toUri()
@@ -199,7 +199,7 @@ class UrlShortenerControllerImpl(
         try {
             return limit.toInt()
         } catch (e: NumberFormatException) {
-            return 0
+            return -1
         }
     }
 
