@@ -1,4 +1,3 @@
-@file:Suppress("ReturnCount")
 /**
  * Package containing use cases related to the core functionality of URL shortener.
  */
@@ -91,22 +90,23 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
     override fun newRedirect(hash: String) : Boolean {
         println("Comprobando si la redirección es posible, con hash: $hash")
         val exists = findRedirectByHash(hash)
+        var resultado = false
 
         println("Redirección existe: $exists")
 
         val redirect = obtainRedirectByHash(hash)
         if (!exists) {
-            return true
+            resultado = true
         }
         else if (redirect?.limit == 0 || redirect?.bucket?.tryConsume(1) == true) {
                 println("Redirección permitida, total de redirecciones: ${redirect.bucket.availableTokens}")
                 counter.increment()
-                return true
+                resultado = true
         }
         else {
             println("Redirección no permitida")
         }
-        return false
+        return resultado
     }
 
     override fun obtainNumberOfRedirectsByHash(hash: String): Int {

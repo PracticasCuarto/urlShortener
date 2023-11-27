@@ -1,6 +1,3 @@
-@file:Suppress("UnusedPrivateProperty")
-
-
 package es.unizar.urlshortener.core.usecases
 
 import es.unizar.urlshortener.core.Redirection
