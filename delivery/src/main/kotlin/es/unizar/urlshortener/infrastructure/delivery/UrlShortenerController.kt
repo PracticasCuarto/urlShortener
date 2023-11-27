@@ -76,6 +76,7 @@ sealed interface ShortUrlDataReapose
 Data returned after the creation of a short url.*/
 data class ShortUrlDataOut(
     val url: URI? = null,
+    val qr: String? = null,
     val properties: Map<String, Any> = emptyMap()
 ) :  ShortUrlDataReapose
 
@@ -133,7 +134,7 @@ class UrlShortenerControllerImpl(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
         @RequestParam(required = false, defaultValue = "0") limit: String,
-        @RequestParam(required = false, defaultValue = "true") hayQr: String,
+        @RequestParam(required = false, defaultValue = "false") hayQr: String,
 
         ): ResponseEntity<ShortUrlDataReapose> {
 
@@ -158,14 +159,20 @@ class UrlShortenerControllerImpl(
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(result.hash, request) }.toUri()
         h.location = url
 
+        val qrUri = linkTo<UrlShortenerControllerImpl> { redirectTo(result.hash, request) }
+            .slash("qr")
+            .toUri()
+
         val response = ShortUrlDataOut(
             url = url,
+            // Si hayQr == "true" se genera el código QR, si es false, qr = null
+            qr = if (hayQr == "on") qrUri.toString() else null,
             properties = mapOf(
                 "safe" to result.properties.safe
             )
         )
 
-        // A partir de aqui es mio.
+        // A partir de aqui es el QR.
 
         if (hayQr == "true") {
             qrUseCase.generateQRCode(url.toString(), result.hash)
