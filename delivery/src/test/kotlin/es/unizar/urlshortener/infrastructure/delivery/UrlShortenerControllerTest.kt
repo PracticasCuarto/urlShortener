@@ -195,6 +195,14 @@ class UrlShortenerControllerTest {
 
     }
 
+    @Test
+    fun `newRedirect returns a too many conections if it passes the limit`() {
+        given(redirectLimitUseCase.newRedirect("key")).willReturn(false)
+
+        mockMvc.perform(get("/{id}", "key"))
+            .andDo(print())
+            .andExpect(status().isTooManyRequests)
+    }
     // Test para comprobar que se devuelve un 404 cuando se intenta acceder a un código QR que no existe
 
     // Test para comprobar que devuelve el código QR cuando se crea correctamente
