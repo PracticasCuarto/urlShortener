@@ -153,7 +153,7 @@ class UrlShortenerControllerTest {
     }
 
     @Test
-    fun `newRedirect returns true when limit is a valid number`() {
+    fun `creates returns a basic redirect if it can compute a hash given a redirection limit`() {
         given(
             createShortUrlUseCase.create(
                 url = "http://example.com/",
@@ -173,6 +173,26 @@ class UrlShortenerControllerTest {
             .andExpect(status().isCreated)
             .andExpect(redirectedUrl("http://localhost/f684a3c4"))
             .andExpect(jsonPath("$.url").value("http://localhost/f684a3c4"))
+    }
+
+    @Test
+    fun `creates returns a bad request if its given an invalid redirection limit`() {
+        given(
+            createShortUrlUseCase.create(
+                url = "http://example.com/",
+                data = ShortUrlProperties(ip = "127.0.0.1", limit = -1)
+            )
+        ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
+
+        mockMvc.perform(
+            post("/api/link")
+                .param("url", "http://example.com/")
+                .param("limit", "-1")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ).andDo(print())
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.statusCode").value(400))
+
     }
 
     // Test para comprobar que se devuelve un 404 cuando se intenta acceder a un código QR que no existe
