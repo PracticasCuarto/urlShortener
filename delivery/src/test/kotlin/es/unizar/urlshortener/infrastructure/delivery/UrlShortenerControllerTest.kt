@@ -7,9 +7,6 @@ import es.unizar.urlshortener.core.usecases.*
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.never
-import org.mockito.Mockito.mock
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -21,7 +18,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import java.time.LocalDateTime
 
 @WebMvcTest
 @ContextConfiguration(
@@ -48,10 +44,16 @@ class UrlShortenerControllerTest {
     private lateinit var returnInfoUseCase: ReturnInfoUseCase
 
     @MockBean
+    private lateinit var isUrlReachableUseCase: IsUrlReachableUseCase
+
+    @MockBean
     private lateinit var redirectLimitUseCase: RedirectLimitUseCase
 
     @MockBean
     private lateinit var returnSystemInfoUseCase: ReturnSystemInfoUseCase
+
+    @MockBean
+    private lateinit var qrUseCase: QrUseCase
 
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
@@ -141,6 +143,25 @@ class UrlShortenerControllerTest {
             .andDo(print())
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.statusCode").value(404))
+    }
+
+    // Test para comprobar que se devuelve un 404 cuando se intenta acceder a un código QR que no existe
+
+    // Test para comprobar que devuelve el código QR cuando se crea correctamente
+    @Test
+    fun `getQrImageBytes returns a QR code when it is created correctly`() {
+        // Configuración del escenario de prueba
+        val validUrl = "https://example.com"
+        val validHash = "8ae9a8dc"
+        val qrCodeBytes = byteArrayOf(1, 2, 3)
+
+        given(qrUseCase.generateQRCode(validUrl, validHash))
+            .willReturn(qrCodeBytes)
+
+        // Llamada al endpoint que debería generar el código QR
+        mockMvc.perform(get("/{id}/qr", validHash))
+            .andExpect(content().contentType(MediaType.IMAGE_PNG))
+            .andExpect(content().bytes(qrCodeBytes))
     }
 
 }

@@ -20,10 +20,20 @@
             <br>
             <form action="" class="col-lg-12" id="shortener" role="form">
                 <div class="input-group input-group-lg col-sm-offset-4 col-sm-4">
+
+                    <!-- Poner un checkbox para si se quiere URL o no -->
+                    <div class="input-group-addon">
+                        <input type="checkbox" id="hayQr" name="hayQr"> QR
+                    </div>
                     <input class="center-block form-control input-lg" name="url"
                            placeholder="Enter a URL" title="Enter a URL" type="text">
                     <span class="input-group-btn"><button
                             class="btn btn-lg btn-primary" type="submit">Short me!</button></span>
+                </div>
+                <div class="input-group input-group-lg col-sm-offset-4 col-sm-4">
+                    <input class="center-block form-control input-lg" name="limit"
+                           placeholder="Enter the limit" title="Enter the limit" type="number">
+
                 </div>
             </form>
         </div>

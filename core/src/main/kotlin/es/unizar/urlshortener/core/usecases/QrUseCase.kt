@@ -27,6 +27,7 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCa
 
         // Marcar el código QR como "en proceso de creación"
         qrCodeStatusMap[hash] = true
+        // AÑADIR EN LA BASE QUE QR ESTA EN PROCESO (2)
 
         //val p1 = getCodeStatus(hash)
         //println("Valor antes durante el Qr: $p1")
@@ -39,18 +40,22 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCa
 
         // Marcar el código QR como "creado"
         qrCodeStatusMap[hash] = false
+        // AÑADIR EN LA BASE QUE QR ESTA CREADO (1)
 
         return byteArray
     }
 
     override fun getQrImageBytes(id: String): ByteArray? {
+        // EN VEZ DE EN LA CARPETA MIRAR EN LA BASE DE DATOS QUE HAY QR
         val qrImagePath = File(qrCodeFolder, "$id.png")
 
+        // COMPROBAR QUE ES ALCANZABLE
         return if (qrImagePath.exists()) {
             qrImagePath.readBytes()
         } else {
             // No existe en la base de datos, devolverá una respuesta de tipo 404
             null
+            // COMPROBAR TB LA RESPUESTA EN CASO DE QUE ESTE PENDIENTE
         }
     }
 

@@ -140,7 +140,7 @@ class UrlShortenerControllerImpl(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
         @RequestParam(required = false, defaultValue = "0") limit: String,
-        @RequestParam(required = false, defaultValue = "true") hayQr: String,
+        @RequestParam(required = false, defaultValue = "false") hayQr: String,
 
         ): ResponseEntity<ShortUrlDataReapose> {
         println("Valor de data: ${data.url}")
@@ -179,19 +179,16 @@ class UrlShortenerControllerImpl(
         val response = ShortUrlDataOut(
             url = url,
             // Si hayQr == "true" se genera el código QR, si es false, qr = null
-            qr = if (hayQr == "true") qrUri.toString() else null,
+            qr = if (hayQr == "on") qrUri.toString() else null,
             properties = mapOf(
                 "safe" to result.properties.safe
             )
         )
 
-        // Print de qr de response
-        println("Valor de qr: ${response.qr}")
-
-        // A partir de aqui es mio.
+        // A partir de aqui es el QR.
 
         val p1 = qrUseCase.getCodeStatus(result.hash)
-        if (hayQr == "true") {
+        if (hayQr == "on") {
             qrUseCase.generateQRCode(url.toString(), result.hash)
         }
         val p3 = qrUseCase.getCodeStatus(result.hash)
