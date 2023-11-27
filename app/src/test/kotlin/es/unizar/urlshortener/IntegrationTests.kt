@@ -2,6 +2,8 @@
 
 package es.unizar.urlshortener
 
+import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseBadMock
+import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseGoodMock
 import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataOut
 import es.unizar.urlshortener.infrastructure.delivery.UrlShortenerControllerImpl
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
@@ -21,8 +23,6 @@ import org.springframework.test.jdbc.JdbcTestUtils
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import java.net.URI
-import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseGoodMock
-import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseBadMock
 
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -131,6 +131,13 @@ class HttpRequestTest {
 
     @Test
     fun `redirectTo adds to the database the ip and the location of the user for existing short URL`() {
+        // forzamos a que la url sea alcanzable
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock
+
+        // Configure the controller to use the reachableMock
+        urlShortenerController.isUrlReachableUseCase = reachableMock
+
         // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada,Barcelona
         val specifiedIp = "188.77.145.43"
         val target = shortUrl("http://example.com/").headers.location
