@@ -35,9 +35,16 @@ interface RedirectLimitUseCase {
      */
     fun addNewRedirect(hash: String, limite: Int)
 
-
+    /**
+     * Returns the total number of redirects.
+     */
     fun obtainTotalNumberOfRedirects(): Int
 
+    /**
+     * Returns the number of redirects for a given hash.
+     *
+     * @param hash The hash associated with the shortened link.
+     */
     fun obtainNumberOfRedirectsByHash(hash: String): Int
 
     // Función para buscar un elemento en la lista por hash
@@ -123,7 +130,7 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
      * @param hash The hash associated with the shortened link.
      * @param limit The maximum number of redirects allowed in an hour.
      */
-    override fun addNewRedirect(hash: String, limite: Int) {
+    override fun `addNewRedirect`(hash: String, limite: Int) {
 
         var refill : Refill
         var limit: Bandwidth

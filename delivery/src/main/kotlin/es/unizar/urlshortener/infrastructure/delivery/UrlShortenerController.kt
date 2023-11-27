@@ -150,6 +150,8 @@ class UrlShortenerControllerImpl(
 
         if (limiteInt >= 0) {
             redirectLimitUseCase.addNewRedirect(result.hash, limiteInt)
+        } else {
+            return ResponseEntity(Error(400, "El límite debe ser mayor o igual que 0"), HttpStatus.BAD_REQUEST)
         }
 
         val h = HttpHeaders()

@@ -14,6 +14,7 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
@@ -48,6 +49,12 @@ class UrlShortenerControllerTest {
     private lateinit var returnInfoUseCase: ReturnInfoUseCase
 
     @MockBean
+    private lateinit var isUrlReachableUseCase: IsUrlReachableUseCase
+
+    @MockBean
+    private lateinit var qrUseCase: QrUseCase
+
+    @MockBean
     private lateinit var redirectLimitUseCase: RedirectLimitUseCase
 
     @MockBean
@@ -56,6 +63,7 @@ class UrlShortenerControllerTest {
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
+        given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
 
         mockMvc.perform(get("/{id}", "key"))
             .andExpect(status().isTemporaryRedirect)
@@ -68,6 +76,7 @@ class UrlShortenerControllerTest {
     fun `redirectTo returns a not found when the key does not exist`() {
         given(redirectUseCase.redirectTo("key"))
             .willAnswer { throw RedirectionNotFound("key") }
+        given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
 
         mockMvc.perform(get("/{id}", "key"))
             .andDo(print())
@@ -82,9 +91,10 @@ class UrlShortenerControllerTest {
         given(
             createShortUrlUseCase.create(
                 url = "http://example.com/",
-                data = ShortUrlProperties(ip = "127.0.0.1", horaRedireccion = null)
+                data = ShortUrlProperties(ip = "127.0.0.1")
             )
         ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
+        given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
 
         mockMvc.perform(
             post("/api/link")
@@ -105,6 +115,7 @@ class UrlShortenerControllerTest {
                 data = ShortUrlProperties(ip = "127.0.0.1")
             )
         ).willAnswer { throw InvalidUrlException("ftp://example.com/") }
+        given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
 
         mockMvc.perform(
             post("/api/link")
@@ -143,4 +154,20 @@ class UrlShortenerControllerTest {
             .andExpect(jsonPath("$.statusCode").value(404))
     }
 
+    @Test
+    fun `newRedirect returns true when limit is a valid number`() {
+        given(
+            createShortUrlUseCase.create(
+                url = "http://example.com/",
+                data = ShortUrlProperties(ip = "127.0.0.1")
+            )
+        ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
+
+        mockMvc.perform(
+            post("/api/link")
+                .param("key", "ftp://example.com/")
+                .param("limit", "1")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ).andExpect(status().isOk)
+    }
 }
