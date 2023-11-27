@@ -62,6 +62,6 @@ class ApplicationConfiguration(
     fun isUrlReachableUseCase() = IsUrlReachableUseCaseImpl()
 
     @Bean
-    fun qrUseCase() = QrUseCaseImpl()
+    fun qrUseCase() = QrUseCaseImpl(shortUrlRepositoryService())
 
 }

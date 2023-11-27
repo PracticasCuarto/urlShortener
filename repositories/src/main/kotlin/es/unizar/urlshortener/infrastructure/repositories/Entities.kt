@@ -45,6 +45,6 @@ class ShortUrlEntity(
     val ip: String?,
     val country: String?,
     val limit: Int?,
-    var numRedirecciones: Int?,
-    var horaRedireccion: LocalDateTime?
+    var hayQr: Int?,
+    var alcanzable: Int?
 )

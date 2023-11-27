@@ -1,5 +1,6 @@
 package es.unizar.urlshortener.core.usecases
 
+// import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
@@ -31,7 +32,10 @@ class IsUrlReachableUseCaseImpl(val connect: (it:String) -> Int = {
 
     connection.responseCode
 
-}) : IsUrlReachableUseCase {
+}
+    // PONER UNA COMA ANTES DE ESTO (despues de la llave) MARCOS
+    //private val shortUrlEntityRepository: ShortUrlRepositoryService
+) : IsUrlReachableUseCase {
     override fun isUrlReachable(urlString: String): Int {
         var attempt = 0
         while (attempt < MAX_ATTEMPTS) {

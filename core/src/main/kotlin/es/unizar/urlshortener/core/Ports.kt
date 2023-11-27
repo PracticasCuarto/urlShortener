@@ -20,17 +20,16 @@ interface ShortUrlRepositoryService {
     fun findByKey(id: String): ShortUrl?
     fun save(su: ShortUrl): ShortUrl
 
-    fun obtenerNumRedirecciones(id: String): Int
-
-    fun actualizarNumRedirecciones(id: String, numeroRedirecciones: Int)
-
-    fun reiniciarNumRedirecciones(id: String)
-
     fun obtainLimit(hash: String): Int
 
-    fun obtenerHoraRedireccion(id: String): LocalDateTime?
+    fun obtainAlcanzable(hash: String): Int
 
-    fun actualizarHoraRedireccion(id: String, horaRedireccionActual: LocalDateTime)
+    fun obtainHayQr(hash: String): Int
+
+    fun updateAlcanzable(hash: String, alcanzable: Int)
+
+    fun updateHayQr(hash: String, hayQr: Int)
+
 }
 
 /**

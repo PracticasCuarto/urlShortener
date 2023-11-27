@@ -1,18 +1,22 @@
 @file:Suppress("WildcardImport","UnusedParameter","MagicNumber","MaxLineLength")
 package es.unizar.urlshortener.core.usecases
 
+import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import net.glxn.qrgen.core.image.ImageType
 import net.glxn.qrgen.javase.QRCode
 import java.io.ByteArrayOutputStream
 import java.io.File
+
+const val QRCODEFOLDER: String = "../CodigosQr"
 
 interface QrUseCase {
     fun generateQRCode(url: String, hash: String): ByteArray
     fun getQrImageBytes(id: String): ByteArray?
     fun getCodeStatus(hash: String): Int
 }
-
-class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCase {
+class QrUseCaseImpl(
+    private val shortUrlEntityRepository: ShortUrlRepositoryService
+) : QrUseCase {
 
     // Mapa para rastrear el estado de los códigos QR
     private val qrCodeStatusMap: MutableMap<String, Boolean> = mutableMapOf()
@@ -23,11 +27,13 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCa
         val byteArray = byteArrayOutputStream.toByteArray()
 
         val fileName = "${hash}.png"
-        val outputPath = File(qrCodeFolder, fileName).toString()
+        val outputPath = File(QRCODEFOLDER, fileName).toString()
 
         // Marcar el código QR como "en proceso de creación"
         qrCodeStatusMap[hash] = true
         // AÑADIR EN LA BASE QUE QR ESTA EN PROCESO (2)
+        shortUrlEntityRepository.updateHayQr(hash, 2)
+
 
         //val p1 = getCodeStatus(hash)
         //println("Valor antes durante el Qr: $p1")
@@ -47,7 +53,7 @@ class QrUseCaseImpl(private val qrCodeFolder: String = "../CodigosQr") : QrUseCa
 
     override fun getQrImageBytes(id: String): ByteArray? {
         // EN VEZ DE EN LA CARPETA MIRAR EN LA BASE DE DATOS QUE HAY QR
-        val qrImagePath = File(qrCodeFolder, "$id.png")
+        val qrImagePath = File(QRCODEFOLDER, "$id.png")
 
         // COMPROBAR QUE ES ALCANZABLE
         return if (qrImagePath.exists()) {

@@ -42,8 +42,8 @@ data class ShortUrlProperties(
     val owner: String? = null,
     val country: String? = null,
     val limit: Int? = 0,
-    val numRedirecciones: Int? = 0,
-    val horaRedireccion: LocalDateTime? = null
+    val hayQr: Int? = 0,
+    val alcanzable: Int? = 0
 )
 
 /**

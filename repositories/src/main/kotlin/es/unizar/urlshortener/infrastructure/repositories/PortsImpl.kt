@@ -32,30 +32,24 @@ class ShortUrlRepositoryServiceImpl(
         return shortUrlEntityRepository.findByHash(hash)?.limit ?: 0
     }
 
-    override fun obtenerNumRedirecciones(id: String): Int = shortUrlEntityRepository.findByHash(id)?.
-    toDomain()?.properties?.numRedirecciones ?: 0
+    override fun obtainAlcanzable(hash: String): Int {
+        return shortUrlEntityRepository.findByHash(hash)?.alcanzable ?: 0
+    }
 
-    override fun actualizarNumRedirecciones(id: String, numeroRedirecciones: Int) {
-        shortUrlEntityRepository.findByHash(id)?.apply {
-            numRedirecciones = numeroRedirecciones
+    override fun obtainHayQr(hash: String): Int {
+        return shortUrlEntityRepository.findByHash(hash)?.hayQr ?: 0
+    }
+
+    override fun updateAlcanzable(hash: String, alcanzable: Int) {
+        shortUrlEntityRepository.findByHash(hash)?.apply {
+            this.alcanzable = alcanzable
             shortUrlEntityRepository.save(this)
         }
     }
 
-    override fun reiniciarNumRedirecciones(id: String) {
-        shortUrlEntityRepository.findByHash(id)?.apply {
-            numRedirecciones = 0
-            shortUrlEntityRepository.save(this)
-        }
-    }
-
-    override fun obtenerHoraRedireccion(id: String): LocalDateTime? {
-        return shortUrlEntityRepository.findByHash(id)?.horaRedireccion
-    }
-
-    override fun actualizarHoraRedireccion(id: String, horaRedireccionActual: LocalDateTime) {
-        shortUrlEntityRepository.findByHash(id)?.apply {
-            horaRedireccion = horaRedireccionActual
+    override fun updateHayQr(hash: String, hayQr: Int) {
+        shortUrlEntityRepository.findByHash(hash)?.apply {
+            this.hayQr = hayQr
             shortUrlEntityRepository.save(this)
         }
     }
