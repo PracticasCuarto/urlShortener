@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.actuate.metrics.MetricsEndpoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import es.unizar.urlshortener.core.usecases.QrUseCaseImpl       //Esto lo implementamos al crear el use case del qr
 
 
 /**
@@ -54,9 +53,10 @@ class ApplicationConfiguration(
     fun returnInfoUseCase() = ReturnInfoUseCaseImpl(clickRepositoryService())
 
     @Bean
-    fun returnSystemInfoUseCase() = ReturnSystemInfoUseCaseImpl(metricsEndpoint)
-    @Bean
     fun redirectLimitUseCase() = RedirectLimitUseCaseImpl()
+
+    @Bean
+    fun returnSystemInfoUseCase() = ReturnSystemInfoUseCaseImpl(metricsEndpoint, redirectLimitUseCase())
 
     @Bean
     fun isUrlReachableUseCase() = IsUrlReachableUseCaseImpl()

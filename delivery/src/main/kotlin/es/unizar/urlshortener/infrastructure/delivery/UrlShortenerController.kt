@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.bind.annotation.*
 import ua_parser.Parser
 import java.io.File
@@ -94,6 +95,7 @@ data class Error(
  * **Note**: Spring Boot is able to discover this [RestController] without further configuration.
  */
 @RestController
+@EnableScheduling
 class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
@@ -211,7 +213,7 @@ class UrlShortenerControllerImpl(
     @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnInfo(@PathVariable id: String): List<Info> = returnInfoUseCase.returnInfo(id)
 
-    @GetMapping("/api/metrics/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("/api/stats/metrics/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnSystemInfo(@PathVariable id: String):
             SystemInfo = returnSystemInfoUseCase.returnSystemInfo(id)
 
