@@ -28,8 +28,8 @@ class ShortUrlRepositoryServiceImpl(
 
     override fun save(su: ShortUrl): ShortUrl = shortUrlEntityRepository.save(su.toEntity()).toDomain()
 
-    override fun obtainLimit(hash: String): Int {
-        return shortUrlEntityRepository.findByHash(hash)?.limit ?: 0
+    override fun obtainLimit(hash: String): Long {
+        return shortUrlEntityRepository.findByHash(hash)?.limit ?: 0L
     }
 
     override fun obtainAlcanzable(hash: String): Int {

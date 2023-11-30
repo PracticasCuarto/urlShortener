@@ -6,7 +6,6 @@ package es.unizar.urlshortener.core.usecases
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.BandwidthBuilder
 import io.github.bucket4j.Bucket
-import io.github.bucket4j.Refill
 import io.micrometer.core.instrument.Counter
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
@@ -33,7 +32,7 @@ interface RedirectLimitUseCase {
      * @param hash The hash associated with the shortened link.
      * @param limit The maximum number of redirects allowed in an hour.
      */
-    fun addNewRedirect(hash: String, limite: Int)
+    fun addNewRedirect(hash: String, limite: Long)
 
     /**
      * Returns the total number of redirects.
@@ -65,7 +64,7 @@ interface RedirectLimitUseCase {
 data class Redirects(
     val hash: String? = null,
     val bucket :Bucket,
-    val limit: Int = 0,
+    val limit: Long = 0,
 )
 
 /**
@@ -99,7 +98,7 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
         if (!exists) {
             resultado = true
         }
-        else if (redirect?.limit == 0 || redirect?.bucket?.tryConsume(1) == true) {
+        else if (redirect?.limit == 0L|| redirect?.bucket?.tryConsume(1) == true) {
                 println("Redirección permitida, total de redirecciones: ${redirect.bucket.availableTokens}")
                 counter.increment()
                 resultado = true
@@ -114,7 +113,7 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
         val redirect = obtainRedirectByHash(hash)
         val avaliableTokens = redirect?.bucket?.availableTokens
         val totalTokens = redirect?.limit
-        if (totalTokens != null && totalTokens != 0 && avaliableTokens != null) {
+        if (totalTokens != null && totalTokens != 0L && avaliableTokens != null) {
                 return totalTokens.toInt() - avaliableTokens.toInt()
         } else {
             return avaliableTokens?.toInt() ?: 0

@@ -44,7 +44,7 @@ class ShortUrlEntity(
     val safe: Boolean,
     val ip: String?,
     val country: String?,
-    val limit: Int?,
+    val limit: Long?,
     var hayQr: Int?,
     var alcanzable: Int?
 )

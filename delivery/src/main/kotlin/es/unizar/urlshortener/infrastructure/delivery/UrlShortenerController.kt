@@ -140,9 +140,9 @@ class UrlShortenerControllerImpl(
 
         ): ResponseEntity<ShortUrlDataReapose> {
 
-        var limiteInt: Int = limiteAEntero(limit)
+        var limiteLong: Long = limiteALong(limit)
 
-        if (limiteInt < 0) {
+        if (limiteLong < 0) {
             return ResponseEntity(Error(HttpStatus.BAD_REQUEST.value(), "El límite debe ser mayor o igual que 0"), HttpStatus.BAD_REQUEST)
         }
 
@@ -151,11 +151,11 @@ class UrlShortenerControllerImpl(
             data = ShortUrlProperties(
                 ip = request.remoteAddr,
                 sponsor = data.sponsor,
-                limit = limiteInt
+                limit = limiteLong
             )
         )
 
-        redirectLimitUseCase.addNewRedirect(result.hash, limiteInt)
+        redirectLimitUseCase.addNewRedirect(result.hash, limiteLong)
 
         val h = HttpHeaders()
         val url = linkTo<UrlShortenerControllerImpl> { redirectTo(result.hash, request) }.toUri()
@@ -210,11 +210,11 @@ class UrlShortenerControllerImpl(
     // --------------------------------------------------------------
 
     // Función para convertir el límite a entero
-    private fun limiteAEntero(limit: String): Int {
+    private fun limiteALong(limit: String): Long {
         try {
-            return limit.toInt()
+            return limit.toLong()
         } catch (e: NumberFormatException) {
-            return -1
+            return -1L
         }
     }
 

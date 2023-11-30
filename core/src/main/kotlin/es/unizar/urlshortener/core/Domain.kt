@@ -41,7 +41,7 @@ data class ShortUrlProperties(
     val safe: Boolean = true,
     val owner: String? = null,
     val country: String? = null,
-    val limit: Int? = 0,
+    val limit: Long? = 0,
     val hayQr: Int? = 0,
     val alcanzable: Int? = 0
 )

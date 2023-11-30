@@ -20,7 +20,7 @@ interface ShortUrlRepositoryService {
     fun findByKey(id: String): ShortUrl?
     fun save(su: ShortUrl): ShortUrl
 
-    fun obtainLimit(hash: String): Int
+    fun obtainLimit(hash: String): Long
 
     fun obtainAlcanzable(hash: String): Int
 
