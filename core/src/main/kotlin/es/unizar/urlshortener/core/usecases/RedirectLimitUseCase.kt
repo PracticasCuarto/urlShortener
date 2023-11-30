@@ -4,6 +4,7 @@
 package es.unizar.urlshortener.core.usecases
 
 import io.github.bucket4j.Bandwidth
+import io.github.bucket4j.BandwidthBuilder
 import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
 import io.micrometer.core.instrument.Counter
@@ -130,18 +131,12 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
      * @param hash The hash associated with the shortened link.
      * @param limit The maximum number of redirects allowed in an hour.
      */
-    override fun `addNewRedirect`(hash: String, limite: Int) {
+    override fun `addNewRedirect`(hash: String, limite: Long) {
 
-        var refill : Refill
-        var limit: Bandwidth
-        if (limite == 0) {
-            refill = Refill.intervally(1L, Duration.ofMinutes(1))
-            limit = Bandwidth.classic(1L, refill)
-        } else {
-            println("Redirección añadida, con $limite redirecciones por hora")
-            refill = Refill.intervally(limite.toLong(), Duration.ofMinutes(1))
-            limit = Bandwidth.classic(limite.toLong(), refill)
-        }
+        var limit: Bandwidth = Bandwidth.builder()
+            .capacity( if (limite == 0L) 1 else limite)
+            .refillIntervally(if (limite == 0L) 1 else limite, Duration.ofMinutes(1))
+            .build()
 
         val bucket: Bucket = Bucket.builder()
             .addLimit(limit)

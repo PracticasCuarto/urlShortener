@@ -3,7 +3,6 @@ package es.unizar.urlshortener.core.usecases
 // import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.io.IOException
 import java.net.HttpURLConnection
-import java.net.MalformedURLException
 import java.net.URL
 
 /*
@@ -24,13 +23,14 @@ interface IsUrlReachableUseCase {
 /**
  * Implementation of [IsUrlReachableUseCase].
  */
-class IsUrlReachableUseCaseImpl(val connect: (it:String) -> Int = {
+class IsUrlReachableUseCaseImpl(
+    val connect: (it: String) -> Boolean = {
     val url = URL(it)
     val connection = url.openConnection() as HttpURLConnection
     // connection.requestMethod = "GET"
     //connection.connectTimeout = 5000 // Tiempo de espera en milisegundos
 
-    connection.responseCode
+        connection.responseCode == HttpURLConnection.HTTP_OK
 
 }
     // PONER UNA COMA ANTES DE ESTO (despues de la llave) MARCOS
@@ -39,30 +39,30 @@ class IsUrlReachableUseCaseImpl(val connect: (it:String) -> Int = {
     override fun isUrlReachable(urlString: String): Int {
         var attempt = 0
         while (attempt < MAX_ATTEMPTS) {
-            try {
-                val responseCode = connect(urlString)
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    return HttpURLConnection.HTTP_OK
-                } else {
+            runCatching {
+                if (!connect(urlString)) {
                     attempt++
                     Thread.sleep(WAIT_TIME) // Espacio de 1 segundo entre intentos
                 }
-            } catch (malformedURLException: MalformedURLException) {
-                // Manejar la URL mal formada
-                println("URL mal formada")
-            } catch (ioException: IOException) {
+            }.onFailure {
                 // Manejar problemas de entrada/salida durante la conexión
-                println("Error de E/S al conectar con la URL: ${ioException.message}")
+                println("Error de E/S al conectar con la URL: ${it.message}")
                 attempt++
                 Thread.sleep(WAIT_TIME) // Espacio de 1 segundo entre intentos
-           }
+            }
         }
-        return HttpURLConnection.HTTP_BAD_REQUEST
+        return if (attempt == MAX_ATTEMPTS) {
+            // Si se ha superado el número máximo de intentos, se devuelve un código de error
+            HttpURLConnection.HTTP_BAD_REQUEST
+        } else {
+            // Si no se ha superado el número máximo de intentos, se devuelve un código de éxito
+            HttpURLConnection.HTTP_OK
+        }
     }
 }
 
-val isUrlReachableUseCaseGoodMock = IsUrlReachableUseCaseImpl( {HttpURLConnection.HTTP_OK })
-val isUrlReachableUseCaseBadMock = IsUrlReachableUseCaseImpl( {HttpURLConnection.HTTP_BAD_REQUEST })
+val isUrlReachableUseCaseGoodMock = IsUrlReachableUseCaseImpl( { true })
+val isUrlReachableUseCaseBadMock = IsUrlReachableUseCaseImpl( { false })
 
 
 // La parte de probar la conexion 3 veces hacerla una interfaz y que esta implementacion actual que sea una
