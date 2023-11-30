@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.bind.annotation.*
 import ua_parser.Parser
 import java.io.File
@@ -94,6 +95,7 @@ data class Error(
  * **Note**: Spring Boot is able to discover this [RestController] without further configuration.
  */
 @RestController
+@EnableScheduling
 class UrlShortenerControllerImpl(
     val redirectUseCase: RedirectUseCase,
     val logClickUseCase: LogClickUseCase,
@@ -165,7 +167,7 @@ class UrlShortenerControllerImpl(
 
         val response = ShortUrlDataOut(
             url = url,
-            // Si hayQr == "true" se genera el código QR, si es false, qr = null
+            // Si hayQr == "on" se genera el código QR, si es false, qr = null
             qr = if (hayQr == "on") qrUri.toString() else null,
             properties = mapOf(
                 "safe" to result.properties.safe
@@ -173,10 +175,15 @@ class UrlShortenerControllerImpl(
         )
 
         // A partir de aqui es el QR.
+        //Comprobamos el valor de hayQr en la base de datos.
+        println("Valor del hayQr antes: ${qrUseCase.getCodeStatus(result.hash)}")
 
-        if (hayQr == "true") {
+        if (hayQr == "on") {
             qrUseCase.generateQRCode(url.toString(), result.hash)
         }
+
+        //Comprobamos el valor de hayQr en la base de datos.
+        println("Valor del hayQr despues: ${qrUseCase.getCodeStatus(result.hash)}")
 
         // comprobamos si la URL es alcanzable
         if (isUrlReachableUseCase.isUrlReachable(data.url) != HttpURLConnection.HTTP_OK) {
@@ -206,7 +213,7 @@ class UrlShortenerControllerImpl(
     @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnInfo(@PathVariable id: String): List<Info> = returnInfoUseCase.returnInfo(id)
 
-    @GetMapping("/api/metrics/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
+    @GetMapping("/api/stats/metrics/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnSystemInfo(@PathVariable id: String):
             SystemInfo = returnSystemInfoUseCase.returnSystemInfo(id)
 
@@ -250,31 +257,47 @@ class UrlShortenerControllerImpl(
 
     //para los casos de error.
     //data class ErrorResponse(val error: String, val message: String)
-    data class ErrorResponse(val message: String)
 
     @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
     fun returnQr(@PathVariable id: String, @RequestHeader(value = "User-Agent", required = false) userAgent: String?): ResponseEntity<out Serializable> {
+        // Obtener información sobre la URL corta utilizando la nueva función
+        val qrInfo = qrUseCase.getInfoForQr(id)
 
-        val status = qrUseCase.getCodeStatus(id)
-        println("El valor del id: $id")
-        println("El estado del QR es: $status")
-
-        return when (status) {
-            1 -> ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .header("Retry-After", "10")
-                .body("Código QR en proceso de creación")
-            2 -> {
-                val imageBytes = qrUseCase.getQrImageBytes(id)
-                if (imageBytes != null) {
-                    ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(imageBytes)
-                } else {
-                    ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Código QR no encontrado")
-                }
+        return when {
+            // PARA QUE FUNCIONE DE MOMENTO ALCANZABLE A 0 PORQUE NADIE LO MODIFICA !!!!!!!!!!!!!!!!!!!!!!!!!
+            qrInfo.hayQr == 1 && qrInfo.alcanzable == 1 -> {
+                // La URL corta existe, es redireccionable y tiene un código QR, devolver QR
+                println("Hola")
+                return qrInfo.imageBytes?.let {
+                    ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(it)
+                } ?: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al obtener el código QR")
             }
-            else -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Código QR no encontrado")
+            qrInfo.hayQr == 2 -> {
+                // La URL corta existe, pero el código QR está en proceso de creación
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .header("Retry-After", "10")
+                    .body("Código QR en proceso de creación")
+            }
+            else -> {
+                // Otros casos como no redireccionable, no operativa, spam, etc.
+                // Puedes agregar lógica adicional según tus necesidades
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("No se puede redirigir a esta URL corta en este momento")
+            }
         }
+
+        /*
+
+            COSAS A ACABAR Y VER COMO SACAR:
+                * Si la URI recortada existe --> Esto implica que si el hayQr es 1 o 2 es que si que existe
+                * Si se ha confirmado que se puede realizar la redirección --> alcanzable¿?
+                * Como hacer: "¿todavía no se ha confirmado si se puede o no realizar la redirección?"
+                * Como hacer: "se han enviado demasiadas peticiones durante una cantidad de tiempo determinada"
+                * No puede utilizarse para redirecciones porque no está operativa
+                * No puede ser utilizada para redirecciones por spam
+         */
     }
+
 
 }
