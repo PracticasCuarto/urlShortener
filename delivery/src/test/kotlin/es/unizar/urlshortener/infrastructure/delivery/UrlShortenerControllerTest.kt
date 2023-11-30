@@ -93,7 +93,7 @@ class UrlShortenerControllerTest {
         ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
         // Asumimos que el límite de redirecciones no se ha alcanzado y que la URL es válida
         given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
-        given(isUrlReachableUseCase.isUrlReachable("http://example.com/")).willReturn(HttpURLConnection.HTTP_OK)
+        given(isUrlReachableUseCase.isUrlReachable("http://example.com/")).willReturn(true)
 
         mockMvc.perform(
             post("/api/link")
@@ -116,7 +116,7 @@ class UrlShortenerControllerTest {
         ).willAnswer { throw InvalidUrlException("ftp://example.com/") }
         // Asumimos que el límite de redirecciones no se ha alcanzado y que la URL es válida
         given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
-        given(isUrlReachableUseCase.isUrlReachable("http://example.com/")).willReturn(HttpURLConnection.HTTP_OK)
+        given(isUrlReachableUseCase.isUrlReachable("http://example.com/")).willReturn(true)
 
         mockMvc.perform(
             post("/api/link")
@@ -162,7 +162,7 @@ class UrlShortenerControllerTest {
         ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
         // Asumimos que el límite de redirecciones no se ha alcanzado y que la URL es válida
         given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
-        given(isUrlReachableUseCase.isUrlReachable("http://example.com/")).willReturn(HttpURLConnection.HTTP_OK)
+        given(isUrlReachableUseCase.isUrlReachable("http://example.com/")).willReturn(true)
 
         mockMvc.perform(
             post("/api/link")
