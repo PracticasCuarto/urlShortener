@@ -185,9 +185,11 @@ class UrlShortenerControllerImpl(
         //Comprobamos el valor de hayQr en la base de datos.
         println("Valor del hayQr despues: ${qrUseCase.getCodeStatus(result.hash)}")
 
-        // ALCANZABILIDAD -------------------------------------------
+        // ALCANZABILIDAD ------------------------------------------------
         // indicamos en la db que todavia lo estamos calculando
         isUrlReachableUseCase.setCodeStatus(result.hash, 2)
+        println("calculando alcanzabilidad...")
+        println("Valor del alcanzable: ${isUrlReachableUseCase.getCodeStatus(result.hash)}")
         if (!isUrlReachableUseCase.isUrlReachable(data.url)) {
             println("La URL no es alcanzable")
             // indicamos en la db que no es alcanzable
@@ -204,10 +206,11 @@ class UrlShortenerControllerImpl(
             // indicamos en la db que es alcanzable
             isUrlReachableUseCase.setCodeStatus(result.hash, 1)
         }
-        
+        println("Valor del alcanzable: ${isUrlReachableUseCase.getCodeStatus(result.hash)}")
+        // ---------------------------------------------------------------
+
         return ResponseEntity(response, h, HttpStatus.CREATED)
     }
-    // --------------------------------------------------------------
 
     // Función para convertir el límite a entero
     private fun limiteALong(limit: String): Long {

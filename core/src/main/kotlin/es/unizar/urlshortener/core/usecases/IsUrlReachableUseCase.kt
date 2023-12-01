@@ -45,7 +45,10 @@ class IsUrlReachableUseCaseImpl(
         var attempt = 0
         while (attempt < MAX_ATTEMPTS) {
             runCatching {
-                if (!connect(urlString)) {
+                if (connect(urlString)) {
+                    attempt = MAX_ATTEMPTS+1 // Si la conexión es correcta, se sale del bucle
+                                            // sumamos uno por el if de mas abajo
+                } else {
                     attempt++
                     Thread.sleep(WAIT_TIME) // Espacio de 1 segundo entre intentos
                 }
@@ -58,9 +61,11 @@ class IsUrlReachableUseCaseImpl(
         }
         return if (attempt == MAX_ATTEMPTS) {
             // Si se ha superado el número máximo de intentos, se devuelve false
+            println("La url NO es alcanzable")
             false
         } else {
             // Si no se ha superado el número máximo de intentos, se devuelve true
+            println("La url SI es alcanzable")
             true
         }
     }
