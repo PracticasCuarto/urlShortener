@@ -131,14 +131,15 @@ class UrlShortenerControllerTest {
         fun `returnInfo returns a list of info when the key exists`() {
             // Hacer una petición con argumentos os: Windows, browser: Chrome
             given(returnInfoUseCase.returnInfo("key"))
-                .willReturn(listOf(Info("0:0:0:0:0:0:0:1", "Macintosh", "Chrome")))
+                .willReturn(InfoHash(0,0,
+                    listOf(Info("0:0:0:0:0:0:0:1", "Macintosh", "Chrome"))))
 
             mockMvc.perform(get("/api/link/{id}", "key"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].ip").value("0:0:0:0:0:0:0:1"))
-                .andExpect(jsonPath("$[0].os").value("Macintosh"))
-                .andExpect(jsonPath("$[0].browser").value("Chrome"))
+                .andExpect(jsonPath("lista[0].ip").value("0:0:0:0:0:0:0:1"))
+                .andExpect(jsonPath("lista[0].os").value("Macintosh"))
+                .andExpect(jsonPath("lista[0].browser").value("Chrome"))
         }
 
     @Test

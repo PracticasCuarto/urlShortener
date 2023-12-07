@@ -50,7 +50,7 @@ class ApplicationConfiguration(
         CreateShortUrlUseCaseImpl(shortUrlRepositoryService(), validatorService(), hashService())
 
     @Bean
-    fun returnInfoUseCase() = ReturnInfoUseCaseImpl(clickRepositoryService())
+    fun returnInfoUseCase() = ReturnInfoUseCaseImpl(clickRepositoryService(), shortUrlRepositoryService())
 
     @Bean
     fun redirectLimitUseCase() = RedirectLimitUseCaseImpl()

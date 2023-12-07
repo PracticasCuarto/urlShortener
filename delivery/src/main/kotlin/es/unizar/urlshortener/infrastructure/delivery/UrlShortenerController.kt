@@ -58,7 +58,7 @@ interface UrlShortenerController {
      *
      * **Note**: Delivery of use case [CreateShortUrlUseCase].
      */
-    fun returnInfo(id: String): List<Info>
+    fun returnInfo(id: String): InfoHash
 
     fun returnSystemInfo(@PathVariable id: String): SystemInfo
 }
@@ -222,7 +222,7 @@ class UrlShortenerControllerImpl(
     }
 
     @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
-    override fun returnInfo(@PathVariable id: String): List<Info> = returnInfoUseCase.returnInfo(id)
+    override fun returnInfo(@PathVariable id: String): InfoHash = returnInfoUseCase.returnInfo(id)
 
     @GetMapping("/api/stats/metrics/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnSystemInfo(@PathVariable id: String):
