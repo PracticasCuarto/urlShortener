@@ -1,6 +1,7 @@
 package es.unizar.urlshortener.core.usecases
 
 
+import es.unizar.urlshortener.core.ClickRepositoryService
 import org.springframework.boot.actuate.metrics.MetricsEndpoint
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -45,15 +46,17 @@ const val MILISECONDS = 1000
 @EnableScheduling
 class ReturnSystemInfoUseCaseImpl(
     private val metricsEndpoint: MetricsEndpoint,
-    private val redirectLimitUseCase: RedirectLimitUseCase,
-    private var totalURLsolicitadas: Int = 0,
-    private val totalVecesURLrecortada: Int = 0,
-    private var usedMemoryInMb: Double = 0.0,
-    private var uptimeInSeconds: Double = 0.0
+    private val clickRepository: ClickRepositoryService
 
 ) : ReturnSystemInfoUseCase {
+
+    private var totalRedirecciones: Int = 0
+    private var totalRedireccionesHash: Int = 0
+    private var usedMemoryInMb: Double = 0.0
+    private var uptimeInSeconds: Double = 0.0
+
     // Función que actualiza periódicamente la información del sistema
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 6000)
     override fun updateSystemInfo() {
         // Obtener la métrica jvm.memory.used
         val usedMemoryMetrics = metricsEndpoint.metric("jvm.memory.used", null)
@@ -66,22 +69,23 @@ class ReturnSystemInfoUseCaseImpl(
         uptimeInSeconds = uptime?.div(MILISECONDS)!! // Convertir milisegundos a segundos
 
         // Obtener la cantidad total de URLs acortadas solicitadas en la ultima hora
-        totalURLsolicitadas = redirectLimitUseCase.obtainTotalNumberOfRedirects()
+        totalRedirecciones = clickRepository.obtainNumClicks()
 
         println("usedMemoryInMb: $usedMemoryInMb")
         println("uptimeInSeconds: $uptimeInSeconds")
-        println("totalURLsolicitadas: $totalURLsolicitadas")
-
+        println("totalURLsolicitadas: $totalRedirecciones")
 
     }
 
     override fun returnSystemInfo(key: String): SystemInfo {
         // printear todas las variables
 
-        // Metrica para ver cuanta gente ha solicitado acortar una URL dada en la ultima hora
-        val totalVecesURLrecortada = redirectLimitUseCase.obtainNumberOfRedirectsByHash(key)
+        // Metrica numero de veces que se ha hecho click en la URL
+        totalRedireccionesHash = clickRepository.obtainNumClicks(key)
 
-        return SystemInfo(usedMemoryInMb, uptimeInSeconds, totalURLsolicitadas, totalVecesURLrecortada)
+        println("totalURLsolicitadas: $totalRedireccionesHash")
+
+        return SystemInfo(usedMemoryInMb, uptimeInSeconds, totalRedirecciones, totalRedireccionesHash)
     }
 }
 

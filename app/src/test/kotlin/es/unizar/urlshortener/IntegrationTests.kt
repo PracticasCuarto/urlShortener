@@ -174,7 +174,7 @@ class HttpRequestTest {
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
         headers["X-Forwarded-For"] = specifiedIp
-        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Imprime el contenido de la tabla "click" de la base de datos
         val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
