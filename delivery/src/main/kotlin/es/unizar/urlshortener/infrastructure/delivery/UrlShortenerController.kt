@@ -122,6 +122,9 @@ class UrlShortenerControllerImpl(
 
         if (!redirectLimitUseCase.newRedirect(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
+        val threadWithRunnable = Thread(SimpleRunnable())
+        threadWithRunnable.start()
+
         redirectUseCase.redirectTo(id).let {
             logClickUseCase.logClick(id, propiedades)
             val h = HttpHeaders()
@@ -312,4 +315,12 @@ class UrlShortenerControllerImpl(
     }
 
 
+}
+
+class SimpleRunnable: Runnable {
+    public override fun run() {
+        // Dormir 10 segundos
+        Thread.sleep(10000)
+        println("${Thread.currentThread()} has run.")
+    }
 }

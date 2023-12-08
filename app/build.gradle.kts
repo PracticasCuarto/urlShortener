@@ -11,6 +11,7 @@ dependencies {
     implementation("org.webjars:bootstrap:${Version.BOOTSTRAP}")
     implementation("org.webjars:jquery:${Version.JQUERY}")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
     runtimeOnly("org.hsqldb:hsqldb")
 
