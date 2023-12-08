@@ -48,7 +48,8 @@ data class InfoHash(
  */
 class ReturnInfoUseCaseImpl(
     private val clickRepository: ClickRepositoryService,
-    private val shortUrlRepository: ShortUrlRepositoryService
+    private val shortUrlRepository: ShortUrlRepositoryService,
+    private val redirectLimitUseCaseImpl : RedirectLimitUseCase
 ) : ReturnInfoUseCase {
 
     /**
@@ -69,8 +70,15 @@ class ReturnInfoUseCaseImpl(
             Info(it.properties.ip, it.properties.os, it.properties.browser)
         }
 
-        val redirecciones = clickList.size
         val limite = shortUrlRepository.obtainLimit(key)
+        val redirecciones : Int
+        if (limite == 0L) {
+            redirecciones = clickList.size
+        } else {
+            redirecciones = redirectLimitUseCaseImpl.obtainNumberOfRedirectsByHash(key)
+        }
+
+
 
         return InfoHash(limite, redirecciones, listInfo)
     }

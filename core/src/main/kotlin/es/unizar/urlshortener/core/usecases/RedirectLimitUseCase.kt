@@ -130,7 +130,7 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
      * @param hash The hash associated with the shortened link.
      * @param limit The maximum number of redirects allowed in an hour.
      */
-    override fun `addNewRedirect`(hash: String, limite: Long) {
+    override fun addNewRedirect(hash: String, limite: Long) {
 
         var limit: Bandwidth = Bandwidth.builder()
             .capacity( if (limite == 0L) 1 else limite)
