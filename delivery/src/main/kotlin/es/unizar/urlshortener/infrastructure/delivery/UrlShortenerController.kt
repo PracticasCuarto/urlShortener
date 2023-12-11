@@ -8,6 +8,8 @@ import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.*
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.Resource
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -105,14 +107,18 @@ class UrlShortenerControllerImpl(
     //val metricsEndpoint: MetricsEndpoint
     val redirectLimitUseCase: RedirectLimitUseCase,
     var isUrlReachableUseCase: IsUrlReachableUseCase,
-    val qrUseCase: QrUseCase                        //añadimos el nuevo UseCase del Qr
+    val qrUseCase: QrUseCase,                        //añadimos el nuevo UseCase del Qr
+    val msgUseCase: MsgUseCase
 
 ) : UrlShortenerController {
 
+    @Value("classpath:GeoLite2-City.mmdb")
     // A File object pointing to your GeoIP2 or GeoLite2 database
-    private val database = File("../GeoLite2-City.mmdb")
+    private lateinit var database: Resource
 
-    private val reader: DatabaseReader = DatabaseReader.Builder(database).build()
+    private val reader: DatabaseReader by lazy {
+        DatabaseReader.Builder(database.file).build()
+    }
 
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
@@ -155,6 +161,8 @@ class UrlShortenerControllerImpl(
             )
         )
 
+        //msgUseCase.sendMsg("cola_1", "Se ha creado una nueva URL corta con hash: ${result.hash}")
+
         redirectLimitUseCase.addNewRedirect(result.hash, limiteLong)
 
         val h = HttpHeaders()
@@ -179,7 +187,10 @@ class UrlShortenerControllerImpl(
         println("Valor del hayQr antes: ${qrUseCase.getCodeStatus(result.hash)}")
 
         if (hayQr == "on") {
-            qrUseCase.generateQRCode(url.toString(), result.hash)
+            //qrUseCase.generateQRCode(url.toString(), result.hash)
+
+            //Enviamos mensaje por la cola 1 para que se genere el QR enviando como string el hash un espacio y la url
+            msgUseCase.sendMsg("cola_1", "${result.hash} ${url.toString()}")
         }
 
         //Comprobamos el valor de hayQr en la base de datos.
@@ -278,7 +289,6 @@ class UrlShortenerControllerImpl(
             // PARA QUE FUNCIONE DE MOMENTO ALCANZABLE A 0 PORQUE NADIE LO MODIFICA !!!!!!!!!!!!!!!!!!!!!!!!!
             qrInfo.hayQr == 1 && qrInfo.alcanzable == 1 -> {
                 // La URL corta existe, es redireccionable y tiene un código QR, devolver QR
-                println("Hola")
                 return qrInfo.imageBytes?.let {
                     ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(it)
                 } ?: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

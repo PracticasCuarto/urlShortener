@@ -3,7 +3,7 @@ plugins {
 }
 
 val kotlinVersion by extra("1.9.10")
-val springBootVersion by extra("3.1.3")
+val springBootVersion by extra("3.2.0")
 val detektVersion by extra("1.23.1")
 
 repositories {

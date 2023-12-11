@@ -32,6 +32,12 @@ interface ShortUrlRepositoryService {
 
 }
 
+interface RabbitMQSenderService {
+    fun sendFirstChannelMessage(message: String)
+
+    fun sendSecondChannelMessage(message: String)
+}
+
 /**
  * [ValidatorService] is the port to the service that validates if an url can be shortened.
  *

@@ -1,5 +1,6 @@
 package es.unizar.urlshortener.core.usecases
 
+import es.unizar.urlshortener.core.ShortUrl
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -36,10 +37,10 @@ class IsUrlReachableUseCaseImpl(
 
         connection.responseCode == HttpURLConnection.HTTP_OK
 
-}
+},
+            val shortUrlEntityRepository: ShortUrlRepositoryService
 ) : IsUrlReachableUseCase {
 
-    private val shortUrlEntityRepository: ShortUrlRepositoryService? = null
 
     override fun isUrlReachable(urlString: String): Boolean {
         var attempt = 0
@@ -73,16 +74,16 @@ class IsUrlReachableUseCaseImpl(
     override fun setCodeStatus(hash: String, status: Int) {
         // escribimos en la base de datos el estado del calculo de la alcanzabilidad
         // 0 no existe, 1 creado y 2 creandose.
-        shortUrlEntityRepository?.updateAlcanzable(hash, status)
+        shortUrlEntityRepository.updateAlcanzable(hash, status)
     }
 
     override fun getCodeStatus(hash: String): Int {
-        return shortUrlEntityRepository?.obtainAlcanzable(hash) ?: 0
+        return shortUrlEntityRepository.obtainAlcanzable(hash) ?: 0
     }
 }
 
-val isUrlReachableUseCaseGoodMock = IsUrlReachableUseCaseImpl( { true })
-val isUrlReachableUseCaseBadMock = IsUrlReachableUseCaseImpl( { false })
+fun isUrlReachableUseCaseGoodMock( shortUrlEntityRepository: ShortUrlRepositoryService ) = IsUrlReachableUseCaseImpl( { true }, shortUrlEntityRepository)
+fun isUrlReachableUseCaseBadMock( shortUrlEntityRepository: ShortUrlRepositoryService ) = IsUrlReachableUseCaseImpl( { false }, shortUrlEntityRepository)
 
 
 // La parte de probar la conexion 3 veces hacerla una interfaz y que esta implementacion actual que sea una
