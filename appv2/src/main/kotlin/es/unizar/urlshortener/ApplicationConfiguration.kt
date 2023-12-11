@@ -7,6 +7,7 @@ import es.unizar.urlshortener.core.usecases.*
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
 import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerQrImpl
+import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerReachableImpl
 import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
@@ -76,6 +77,12 @@ class ApplicationConfiguration(
     fun msgUseCase() = MsgUseCaseImpl(rabbitMQSenderService())
 
     @Bean
+    fun msgUseCaseReachable() = MsgUseCaseReachableImpl(rabbitMQSenderService())
+
+    @Bean
     fun listenerQr() = ListenerQrImpl(qrUseCase())
+
+    @Bean
+    fun listenerReachable() = ListenerReachableImpl(isUrlReachableUseCase(shortUrlRepositoryService()))
 
 }

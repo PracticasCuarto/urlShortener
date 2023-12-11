@@ -2,17 +2,15 @@ package es.unizar.urlshortener.core.usecases
 
 import es.unizar.urlshortener.core.RabbitMQSenderService
 
-interface MsgUseCase {
+interface MsgUseCaseReachable {
     fun sendMsg(canal: String, msj: String)
 }
 
-class MsgUseCaseImpl(
+class MsgUseCaseReachableImpl(
     private val rabbitMQSender: RabbitMQSenderService
-
-) : MsgUseCase {
+) : MsgUseCaseReachable {
     override fun sendMsg(canal: String, msj: String) {
         println("Sending message to channel $canal...")
-        rabbitMQSender.sendFirstChannelMessage(msj)
-        //rabbitMQSender.sendSecondChannelMessage(msj)
+        rabbitMQSender.sendSecondChannelMessage(msj)
     }
 }

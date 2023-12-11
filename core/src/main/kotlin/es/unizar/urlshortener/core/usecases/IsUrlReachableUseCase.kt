@@ -18,7 +18,7 @@ private const val WAIT_TIME = 1000L
  * If the url is not reachable, the status code will be 400 (HTTP_BAD_REQUEST).
  */
 interface IsUrlReachableUseCase {
-    fun isUrlReachable(urlString: String): Boolean
+    fun isUrlReachable(urlString: String, hash: String): Boolean
 
     fun setCodeStatus(hash: String, status: Int)
 
@@ -42,7 +42,7 @@ class IsUrlReachableUseCaseImpl(
 ) : IsUrlReachableUseCase {
 
 
-    override fun isUrlReachable(urlString: String): Boolean {
+    override fun isUrlReachable(urlString: String, hash: String): Boolean {
         var attempt = 0
         while (attempt < MAX_ATTEMPTS) {
             runCatching {
@@ -63,10 +63,14 @@ class IsUrlReachableUseCaseImpl(
         return if (attempt == MAX_ATTEMPTS) {
             // Si se ha superado el número máximo de intentos, se devuelve false
             println("La url NO es alcanzable")
+            // escribimos un 0 en la bd para indicar que no es alcanzable
+            shortUrlEntityRepository.updateAlcanzable(hash, 0)
             false
         } else {
             // Si no se ha superado el número máximo de intentos, se devuelve true
             println("La url SI es alcanzable")
+            // escribimos un 1 en la bd para indicar que es alcanzable
+            shortUrlEntityRepository.updateAlcanzable(hash, 1)
             true
         }
     }

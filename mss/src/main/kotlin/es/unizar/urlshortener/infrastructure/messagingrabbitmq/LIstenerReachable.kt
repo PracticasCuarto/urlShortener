@@ -1,18 +1,18 @@
 package es.unizar.urlshortener.infrastructure.messagingrabbitmq
 
-import es.unizar.urlshortener.core.usecases.QrUseCase
 import org.springframework.amqp.rabbit.annotation.RabbitListener
+import es.unizar.urlshortener.core.usecases.IsUrlReachableUseCase
 
-interface ListenerQr {
-    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName])
+interface ListenerReachable {
+    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     fun receiveMessage(message: String) {}
 }
 
 
-class ListenerQrImpl (
-    val qrUseCase: QrUseCase
+class ListenerReachableImpl (
+    val isUrlReachable: IsUrlReachableUseCase
 ) : ListenerQr {
-    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName])
+    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     override fun receiveMessage(message: String) {
         println("Received HEMOS CONSEGIUDO ENTRAR EN EL METODO LISTENER")
 
@@ -23,7 +23,7 @@ class ListenerQrImpl (
         println("Received <$url>")
 
         // Generamos el código QR
-        val qrCode = qrUseCase.generateQRCode(url, hash)
+        isUrlReachable.isUrlReachable(url, hash)
 
     }
 

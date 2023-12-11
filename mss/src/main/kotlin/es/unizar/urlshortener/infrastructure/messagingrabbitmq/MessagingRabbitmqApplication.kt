@@ -45,11 +45,6 @@ class MessagingRabbitmqApplication {
         return container
     }
 
-    //@Bean
-    //fun listenerAdapter(receiver: Receiver?): MessageListenerAdapter {
-        //return MessageListenerAdapter(receiver, "receiveMessage")
-    //}
-
     @Bean
     fun listenerAdapter(receiver: ListenerQrImpl?): MessageListenerAdapter {
         return MessageListenerAdapter(receiver, "receiveMessage")
@@ -79,8 +74,13 @@ class MessagingRabbitmqApplication {
         return container
     }
 
+    //@Bean
+    //fun listenerAdapter2(receiver2: Receiver2?): MessageListenerAdapter {
+    //    return MessageListenerAdapter(receiver2, "receiveMessage")
+    //}
+
     @Bean
-    fun listenerAdapter2(receiver2: Receiver2?): MessageListenerAdapter {
+    fun listenerAdapter2(receiver2: ListenerReachableImpl?): MessageListenerAdapter {
         return MessageListenerAdapter(receiver2, "receiveMessage")
     }
 
