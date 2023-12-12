@@ -73,7 +73,7 @@ class ReturnSystemInfoUseCaseImpl(
 
         println("usedMemoryInMb: $usedMemoryInMb")
         println("uptimeInSeconds: $uptimeInSeconds")
-        println("totalURLsolicitadas: $totalRedirecciones")
+        println("totalRedirecciones: $totalRedirecciones")
 
     }
 
@@ -83,7 +83,7 @@ class ReturnSystemInfoUseCaseImpl(
         // Metrica numero de veces que se ha hecho click en la URL
         totalRedireccionesHash = clickRepository.obtainNumClicks(key)
 
-        println("totalURLsolicitadas: $totalRedireccionesHash")
+        println("totalRedireccionesHash: $totalRedireccionesHash")
 
         return SystemInfo(usedMemoryInMb, uptimeInSeconds, totalRedirecciones, totalRedireccionesHash)
     }
