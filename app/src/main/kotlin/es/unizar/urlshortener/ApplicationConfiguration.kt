@@ -2,6 +2,7 @@
 
 package es.unizar.urlshortener
 
+import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import es.unizar.urlshortener.core.usecases.*
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
@@ -59,7 +60,8 @@ class ApplicationConfiguration(
     fun returnSystemInfoUseCase() = ReturnSystemInfoUseCaseImpl(metricsEndpoint, redirectLimitUseCase())
 
     @Bean
-    fun isUrlReachableUseCase() = IsUrlReachableUseCaseImpl()
+    fun isUrlReachableUseCase(shortUrlRepositoryService: ShortUrlRepositoryService) =
+        IsUrlReachableUseCaseImpl(shortUrlEntityRepository = shortUrlRepositoryService)
 
     @Bean
     fun qrUseCase() = QrUseCaseImpl(shortUrlRepositoryService())

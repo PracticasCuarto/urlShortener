@@ -23,7 +23,7 @@ class ListenerQrImpl (
         println("Received <$url>")
 
         // Generamos el código QR
-        val qrCode = qrUseCase.generateQRCode(url, hash)
+        qrUseCase.generateQRCode(url, hash)
 
     }
 

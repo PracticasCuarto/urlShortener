@@ -82,12 +82,16 @@ class IsUrlReachableUseCaseImpl(
     }
 
     override fun getCodeStatus(hash: String): Int {
-        return shortUrlEntityRepository.obtainAlcanzable(hash) ?: 0
+        return shortUrlEntityRepository.obtainAlcanzable(hash)
     }
 }
 
-fun isUrlReachableUseCaseGoodMock( shortUrlEntityRepository: ShortUrlRepositoryService ) = IsUrlReachableUseCaseImpl( { true }, shortUrlEntityRepository)
-fun isUrlReachableUseCaseBadMock( shortUrlEntityRepository: ShortUrlRepositoryService ) = IsUrlReachableUseCaseImpl( { false }, shortUrlEntityRepository)
+fun isUrlReachableUseCaseGoodMock( shortUrlEntityRepository:
+                                   ShortUrlRepositoryService ) = IsUrlReachableUseCaseImpl( { true },
+                                                                                            shortUrlEntityRepository)
+fun isUrlReachableUseCaseBadMock( shortUrlEntityRepository:
+                                  ShortUrlRepositoryService ) = IsUrlReachableUseCaseImpl( { false },
+                                                                                            shortUrlEntityRepository)
 
 
 // La parte de probar la conexion 3 veces hacerla una interfaz y que esta implementacion actual que sea una
