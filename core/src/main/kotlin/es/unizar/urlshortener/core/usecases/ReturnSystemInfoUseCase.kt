@@ -33,8 +33,8 @@ interface ReturnSystemInfoUseCase {
 data class SystemInfo (
     val memoryUsed: Double? = null,
     val upTime: Double? = null,
-    val totalURL: Int? = null,
-    val totalURLHour: Int? = null
+    val totalRedirecciones: Int? = null,
+    val totalRedireccionesHash: Int? = null
 )
 
 const val BYTES = 1024

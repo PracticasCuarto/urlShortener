@@ -281,4 +281,7 @@ class HttpRequestTest {
         assertThat(response.body?.url).isEqualTo(null)
     }
 
+    // Test que comprueba que cuando se hace una redireccion a una URL, se sume 1 a la metrica de totalRedirecciones
+ 
+
 }
