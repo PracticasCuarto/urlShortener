@@ -8,7 +8,7 @@ import java.util.concurrent.CountDownLatch
 class Receiver2 {
     val latch = CountDownLatch(1)
 
-    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
+    //@RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     fun receiveMessage(message: String) {
         println("Received DOS <$message>")
         latch.countDown()
