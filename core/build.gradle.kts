@@ -1,9 +1,6 @@
+
 plugins {
     id("urlshortener.kotlin-common-conventions")
-}
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {

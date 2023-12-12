@@ -1,7 +1,6 @@
 package es.unizar.urlshortener.infrastructure.repositories
 
 import org.springframework.data.jpa.repository.JpaRepository
-
 /**
  * Specification of the repository of [ShortUrlEntity].
  *

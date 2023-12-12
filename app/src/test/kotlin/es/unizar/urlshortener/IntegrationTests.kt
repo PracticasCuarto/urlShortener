@@ -176,10 +176,6 @@ class HttpRequestTest {
         headers["X-Forwarded-For"] = specifiedIp
         restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
-        // Imprime el contenido de la tabla "click" de la base de datos
-        val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
-        println("Contenido de la tabla 'click': $clickTableContent")
-
         // Verifica que la IP especificada esté en la base de datos
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "ip = '$specifiedIp' AND Country = 'ES' AND City = 'Igualada'")).isEqualTo(1)
