@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*
 import ua_parser.Parser
 import java.io.File
 import java.io.Serializable
-import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.URI
 

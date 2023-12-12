@@ -33,8 +33,8 @@ interface ReturnSystemInfoUseCase {
 data class SystemInfo (
     val memoryUsed: Double? = null,
     val upTime: Double? = null,
-    val totalURL: Int? = null,
-    val totalURLHour: Int? = null
+    val totalRedirecciones: Int? = null,
+    val totalRedireccionesHash: Int? = null
 )
 
 const val BYTES = 1024
@@ -73,7 +73,7 @@ class ReturnSystemInfoUseCaseImpl(
 
         println("usedMemoryInMb: $usedMemoryInMb")
         println("uptimeInSeconds: $uptimeInSeconds")
-        println("totalURLsolicitadas: $totalRedirecciones")
+        println("totalRedirecciones: $totalRedirecciones")
 
     }
 
@@ -83,7 +83,7 @@ class ReturnSystemInfoUseCaseImpl(
         // Metrica numero de veces que se ha hecho click en la URL
         totalRedireccionesHash = clickRepository.obtainNumClicks(key)
 
-        println("totalURLsolicitadas: $totalRedireccionesHash")
+        println("totalRedireccionesHash: $totalRedireccionesHash")
 
         return SystemInfo(usedMemoryInMb, uptimeInSeconds, totalRedirecciones, totalRedireccionesHash)
     }

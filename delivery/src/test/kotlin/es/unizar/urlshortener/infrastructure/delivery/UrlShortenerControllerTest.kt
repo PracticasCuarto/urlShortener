@@ -11,7 +11,6 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
@@ -19,7 +18,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import java.net.HttpURLConnection
 
 @WebMvcTest
 @ContextConfiguration(
@@ -204,6 +202,22 @@ class UrlShortenerControllerTest {
             .andDo(print())
             .andExpect(status().isTooManyRequests)
     }
+
+    @Test
+    fun `returnSystemInfo returns the four metrics correctly`() {
+        given(returnSystemInfoUseCase.returnSystemInfo("key"))
+            .willReturn(SystemInfo(1.0, 2.0, 3, 4))
+
+        mockMvc.perform(get("/api/stats/metrics/{id}", "key"))
+            .andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.memoryUsed").value(1.0))
+            .andExpect(jsonPath("$.upTime").value(2.0))
+            .andExpect(jsonPath("$.totalRedirecciones").value(3))
+            .andExpect(jsonPath("$.totalRedireccionesHash").value(4))
+    }
+
+
     // Test para comprobar que se devuelve un 404 cuando se intenta acceder a un código QR que no existe
 
     // Test para comprobar que devuelve el código QR cuando se crea correctamente

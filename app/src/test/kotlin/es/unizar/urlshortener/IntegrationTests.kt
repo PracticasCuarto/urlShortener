@@ -2,6 +2,7 @@
 
 package es.unizar.urlshortener
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseBadMock
 import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseGoodMock
 import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataOut
@@ -277,4 +278,81 @@ class HttpRequestTest {
         assertThat(response.body?.url).isEqualTo(null)
     }
 
+    // Test que comprueba que cuando se hace una redireccion a una URL, se sume 1 a la metrica de totalRedirecciones
+    @Test
+    fun `redirectTo increments totalRedirecciones and totalRedireccionesHash metrics when a redirection is made`() {
+        // Forzamos a que la URL sea alcanzable
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock
+        // Configuramos el controlador para usar el reachableMock
+        urlShortenerController.isUrlReachableUseCase = reachableMock
+        // Realizamos la operación de acortamiento
+        val response = shortUrl("http://example.com/")
+
+        // Hacer la redirección
+        restTemplate.getForEntity(response.headers.location, String::class.java)
+        // Esperar 6000
+        Thread.sleep(6000)
+
+        // Obtener el valor actualizado de la métrica totalRedirecciones después de la redirección
+        val updatedRedirectionCount = getTotalRedireccionesMetric()
+        // Obtener el valor actualizado de la métrica totalRedireccionesHash después de la redirección
+        val updatedRedirectionHashCount = getTotalRedireccionesHashMetric()
+
+        // Verificar que la métrica totalRedirecciones se incrementó en 1 después de la redirección
+        assertThat(updatedRedirectionCount).isEqualTo(1)
+        // Verificar que la métrica totalRedireccionesHash se incrementó en 1 después de la redirección
+        assertThat(updatedRedirectionHashCount).isEqualTo(1)
+    }
+
+    // Test que compruebe que cuando se hacen 5 redirecciones a una URL, se sume 5 a la métrica de totalRedirecciones
+    // pero no se sume a la metrica de totalRedireccionesHash porque no se solicita a la misma URL
+    @Test
+    fun `redirectTo increments totalRedirecciones and totalRedireccionesHash metrics when 3 redirections are made`() {
+        // Forzamos a que la URL sea alcanzable
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock
+        // Configuramos el controlador para usar el reachableMock
+        urlShortenerController.isUrlReachableUseCase = reachableMock
+        // Realizamos la operación de acortamiento
+        var response = shortUrl("http://example.com/")
+
+        // Hacer 3 redirecciones
+        repeat(3) {
+            restTemplate.getForEntity(response.headers.location, String::class.java)
+            // Esperar 6000
+            Thread.sleep(6000)
+        }
+        response = shortUrl("https://youtube.com")
+        restTemplate.getForEntity(response.headers.location, String::class.java)
+        // Esperar 7000
+        Thread.sleep(7000)
+
+        // Obtener el valor actualizado de la métrica totalRedirecciones después de la redirección
+        val updatedRedirectionCount = getTotalRedireccionesMetric()
+        // Obtener el valor actualizado de la métrica totalRedireccionesHash después de la redirección
+        val updatedRedirectionHashCount = getTotalRedireccionesHashMetric()
+
+        println("updatedRedirectionCount: $updatedRedirectionCount")
+        println("updatedRedirectionHashCount: $updatedRedirectionHashCount")
+        // Verificar que la métrica totalRedirecciones se incrementó en 5 después de la redirección
+        assertThat(updatedRedirectionCount).isEqualTo(4)
+        // Verificar que la métrica totalRedireccionesHash se incrementó en 5 después de la redirección
+        assertThat(updatedRedirectionHashCount).isEqualTo(3)
+    }
+    private fun getTotalRedireccionesMetric(): Int {
+        // Obtener el valor de la métrica totalRedirecciones desde el endpoint JSON
+        val statsEndpoint = "http://localhost:$port/api/stats/metrics/f684a3c4"
+        val metricResponse = restTemplate.getForEntity(statsEndpoint, String::class.java)
+        // Parsear el JSON para obtener el valor de la métrica totalRedirecciones
+        return ObjectMapper().readTree(metricResponse.body).get("totalRedirecciones").asInt()
+    }
+
+    private fun getTotalRedireccionesHashMetric(): Int {
+        // Obtener el valor de la métrica totalRedireccionesHash desde el endpoint JSON
+        val statsEndpoint = "http://localhost:$port/api/stats/metrics/f684a3c4"
+        val metricResponse = restTemplate.getForEntity(statsEndpoint, String::class.java)
+        // Parsear el JSON para obtener el valor de la métrica totalRedireccionesHash
+        return ObjectMapper().readTree(metricResponse.body).get("totalRedireccionesHash").asInt()
+    }
 }
