@@ -147,7 +147,7 @@ class HttpRequestTest {
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
         headers["X-Forwarded-For"] = specifiedIp
-        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Imprime el contenido de la tabla "click" de la base de datos
         val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
@@ -340,6 +340,102 @@ class HttpRequestTest {
         // Verificar que la métrica totalRedireccionesHash se incrementó en 5 después de la redirección
         assertThat(updatedRedirectionHashCount).isEqualTo(3)
     }
+
+    @Test
+    fun `redirectTo redirects when limit is 0`() {
+        val target = shortUrl("http://example.com/", "0").headers.location
+        require(target != null)
+        val headers = HttpHeaders()
+        headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                "Chrome/119.0.0.0 Safari/537.36"
+
+        // Probar por ejemplo 3 veces a solicitar
+        repeat(3) {
+            val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+            assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+            assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+        }
+    }
+
+    @Test
+    fun `redirectTo redirects 3 times when limit is 3`() {
+        val target = shortUrl("http://example.com/", "3").headers.location
+        require(target != null)
+        val headers = HttpHeaders()
+        headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                "Chrome/119.0.0.0 Safari/537.36"
+
+        // Probar por ejemplo 3 veces a solicitar
+        repeat(3) {
+            val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+            assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+            assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+        }
+    }
+
+    @Test
+    fun `redirectTo redirects limits the number of redirects to 3`() {
+        val target = shortUrl("http://example.com/", "3").headers.location
+        require(target != null)
+        val headers = HttpHeaders()
+        headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                "Chrome/119.0.0.0 Safari/537.36"
+
+        // Probar por ejemplo 3 veces a solicitar
+        repeat(3) {
+            val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+            assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+            assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+        }
+
+        // Comprobar que ahora no se redirige y se devuelve estado 429
+        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
+    }
+
+    @Test
+    fun `create doesnt allow a limit lesser than 0`() {
+        val target = shortUrl("http://example.com/", "-1").headers.location
+        assertThat(target).isNull()
+    }
+
+    @Test
+    fun `returnInfo returns the limit correctly`() {
+        val target = shortUrl("http://example.com/", "3").headers.location
+        require(target != null)
+
+        val response = restTemplate.getForEntity(target, String::class.java)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+        assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+
+        val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/f684a3c4", String::class.java)
+        println("infoResponse: ${infoResponse.body}")
+        assertThat(infoResponse.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(infoResponse.body).contains("\"limit\":3")
+    }
+
+    @Test
+    fun `returnInfo returns the amount of pending redirections correctly`() {
+        val target = shortUrl("http://example.com/", "3").headers.location
+        require(target != null)
+
+        // Repetir 3 veces y comprobar que el numRedirecciones va aumentando
+        repeat(3) {
+            val response = restTemplate.getForEntity(target, String::class.java)
+            assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+            assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+
+            val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/f684a3c4", String::class.java)
+            println("infoResponse: ${infoResponse.body}")
+            assertThat(infoResponse.statusCode).isEqualTo(HttpStatus.OK)
+            assertThat(infoResponse.body).contains("\"numRedirecciones\":${it+1}")
+        }
+    }
+
+
     private fun getTotalRedireccionesMetric(): Int {
         // Obtener el valor de la métrica totalRedirecciones desde el endpoint JSON
         val statsEndpoint = "http://localhost:$port/api/stats/metrics/f684a3c4"
@@ -355,4 +451,6 @@ class HttpRequestTest {
         // Parsear el JSON para obtener el valor de la métrica totalRedireccionesHash
         return ObjectMapper().readTree(metricResponse.body).get("totalRedireccionesHash").asInt()
     }
+
+
 }
