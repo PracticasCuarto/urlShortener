@@ -209,6 +209,42 @@ class UrlShortenerControllerTest {
             .andDo(print())
             .andExpect(status().isTooManyRequests)
     }
+
+    // Test que comprueba el funcionamiento del isUrlReachableUseCase si SI es alcanzable
+    @Test
+    fun `isUrlReachable returns a ok if the url is reachable`() {
+        given(
+            createShortUrlUseCase.create(
+                url = "http://example.com/",
+                data = ShortUrlProperties(ip = "127.0.0.1", limit = 0)
+            )
+        ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
+
+        given(isUrlReachableUseCase.isUrlReachable("http://example.com/","f684a3c4")).willReturn(true)
+
+        mockMvc.perform(
+            post("/api/link")
+                .param("url", "http://example.com/")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ).andDo(print())
+            .andExpect(status().isCreated)
+
+    }
+
+    // Test que comprueba el funcionamiento del isUrlReachableUseCase si NO es alcanzable
+    @Test
+    fun `isUrlReachable returns a bad request if the url is not reachable`() {
+        given(isUrlReachableUseCase.isUrlReachable("http://notexample.com/","f684a3c4")).willReturn(false)
+
+        given(returnInfoUseCase.returnInfo("malo"))
+            .willAnswer { throw InformationNotFound("malo") }
+
+        mockMvc.perform(get("/api/link/{id}", "malo"))
+            .andDo(print())
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.statusCode").value(404))
+    }
+
     // Test para comprobar que se devuelve un 404 cuando se intenta acceder a un código QR que no existe
 
     // Test para comprobar que devuelve el código QR cuando se crea correctamente

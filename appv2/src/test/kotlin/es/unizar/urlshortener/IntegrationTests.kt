@@ -2,6 +2,7 @@
 
 package es.unizar.urlshortener
 
+import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseBadMock
 import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseGoodMock
 import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataOut
@@ -38,6 +39,9 @@ class HttpRequestTest {
 
     @Autowired
     private lateinit var urlShortenerController: UrlShortenerControllerImpl
+
+    @Autowired
+    private lateinit var shortUrlRepositoryService: ShortUrlRepositoryService
 
     @BeforeEach
     fun setup() {
@@ -133,7 +137,7 @@ class HttpRequestTest {
     fun `redirectTo adds to the database the ip and the location of the user for existing short URL`() {
         // forzamos a que la url sea alcanzable
         // URL reachable mock
-        val reachableMock = isUrlReachableUseCaseGoodMock
+        val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
         urlShortenerController.isUrlReachableUseCase = reachableMock
@@ -161,7 +165,7 @@ class HttpRequestTest {
     fun `redirectTo adds to the database the ip and the location of the user for non-existent short URL`() {
         // forzamos a que la url sea alcanzable
         // URL reachable mock
-        val reachableMock = isUrlReachableUseCaseGoodMock
+        val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
         urlShortenerController.isUrlReachableUseCase = reachableMock
@@ -250,7 +254,7 @@ class HttpRequestTest {
     @Test
     fun `shortener returns a shortened URL when the URL is reachable`() {
         // URL reachable mock
-        val reachableMock = isUrlReachableUseCaseGoodMock
+        val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
         urlShortenerController.isUrlReachableUseCase = reachableMock
@@ -267,7 +271,7 @@ class HttpRequestTest {
     @Test
     fun `shortener returns an error when the URL is not reachable`() {
         // URL not reachable mock
-        val notReachableMock = isUrlReachableUseCaseBadMock
+        val notReachableMock = isUrlReachableUseCaseBadMock(shortUrlRepositoryService)
 
         // Configure the controller to use the notReachableMock
         urlShortenerController.isUrlReachableUseCase = notReachableMock
