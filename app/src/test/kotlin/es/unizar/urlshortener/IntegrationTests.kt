@@ -360,6 +360,12 @@ class HttpRequestTest {
 
     @Test
     fun `redirectTo redirects 3 times when limit is 3`() {
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock
+
+        // Configure the controller to use the reachableMock
+        urlShortenerController.isUrlReachableUseCase = reachableMock
+
         val target = shortUrl("http://example.com/", "3").headers.location
         require(target != null)
         val headers = HttpHeaders()
@@ -376,8 +382,8 @@ class HttpRequestTest {
     }
 
     @Test
-    fun `redirectTo redirects limits the number of redirects to 3`() {
-        val target = shortUrl("http://example.com/", "3").headers.location
+    fun `redirectTo limits the number of redirects to 3`() {
+        val target = shortUrl("http://example45.com/", "3").headers.location
         require(target != null)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
@@ -388,7 +394,7 @@ class HttpRequestTest {
         repeat(3) {
             val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-            assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+            assertThat(response.headers.location).isEqualTo(URI.create("http://example45.com/"))
         }
 
         // Comprobar que ahora no se redirige y se devuelve estado 429
@@ -404,14 +410,14 @@ class HttpRequestTest {
 
     @Test
     fun `returnInfo returns the limit correctly`() {
-        val target = shortUrl("http://example.com/", "3").headers.location
+        val target = shortUrl("http://example1.com/", "3").headers.location
         require(target != null)
 
         val response = restTemplate.getForEntity(target, String::class.java)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-        assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+        assertThat(response.headers.location).isEqualTo(URI.create("http://example1.com/"))
 
-        val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/f684a3c4", String::class.java)
+        val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/b57de46d", String::class.java)
         println("infoResponse: ${infoResponse.body}")
         assertThat(infoResponse.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(infoResponse.body).contains("\"limit\":3")
@@ -419,16 +425,16 @@ class HttpRequestTest {
 
     @Test
     fun `returnInfo returns the amount of pending redirections correctly`() {
-        val target = shortUrl("http://example.com/", "3").headers.location
+        val target = shortUrl("https://youtube.com/", "3").headers.location
         require(target != null)
 
         // Repetir 3 veces y comprobar que el numRedirecciones va aumentando
         repeat(3) {
             val response = restTemplate.getForEntity(target, String::class.java)
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-            assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+            assertThat(response.headers.location).isEqualTo(URI.create("https://youtube.com/"))
 
-            val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/f684a3c4", String::class.java)
+            val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/60aa83b6", String::class.java)
             println("infoResponse: ${infoResponse.body}")
             assertThat(infoResponse.statusCode).isEqualTo(HttpStatus.OK)
             assertThat(infoResponse.body).contains("\"numRedirecciones\":${it+1}")

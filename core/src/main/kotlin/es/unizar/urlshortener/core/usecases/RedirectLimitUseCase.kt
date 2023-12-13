@@ -52,6 +52,9 @@ interface RedirectLimitUseCase {
     // Función para buscar un elemento en la lista por hash
     fun obtainRedirectByHash(hashActual: String): Redirects?
 
+    // Funcion que borra el contenido de la lista de redirecciones
+    fun clearRedirectsList()
+
 }
 
 /**
@@ -155,6 +158,11 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
     // Función para buscar un elemento en la lista por hash
     override fun obtainRedirectByHash(hashActual: String): Redirects? {
         return redirectsList.find { it.hash == hashActual }
+    }
+
+    // Funcion que borra el contenido de la lista de redirecciones
+    override fun clearRedirectsList() {
+        redirectsList.clear()
     }
 
 }

@@ -1,6 +1,5 @@
 package es.unizar.urlshortener.core.usecases
 
-
 import es.unizar.urlshortener.core.ClickRepositoryService
 import org.springframework.boot.actuate.metrics.MetricsEndpoint
 import org.springframework.scheduling.annotation.EnableScheduling
