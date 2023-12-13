@@ -4,6 +4,8 @@ plugins {
 }
 
 dependencies {
+    developmentOnly("org.springframework.boot:spring-boot-docker-compose:3.1.0")
+
     implementation(project(":core"))
     implementation(project(":delivery"))
     implementation(project(":repositories"))
@@ -14,11 +16,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-amqp")
 
-
     runtimeOnly("org.hsqldb:hsqldb")
-
-    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
-
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-web")
@@ -26,7 +24,4 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:${Version.MOCKITO}")
     testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     testImplementation("org.apache.httpcomponents.client5:httpclient5")
-
-    //esta comentada porque peta el arrancarlo asi con el docker automatico
-    //developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 }
