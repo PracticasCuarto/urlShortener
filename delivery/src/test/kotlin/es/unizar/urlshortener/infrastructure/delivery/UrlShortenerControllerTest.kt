@@ -57,6 +57,12 @@ class UrlShortenerControllerTest {
     @MockBean
     private lateinit var returnSystemInfoUseCase: ReturnSystemInfoUseCase
 
+    @MockBean
+    private lateinit var msgUseCase: MsgUseCase
+
+    @MockBean
+    private lateinit var msgUseCaseReachable: MsgUseCaseReachable
+
     @Test
     fun `redirectTo returns a redirect when the key exists`() {
         given(redirectUseCase.redirectTo("key")).willReturn(Redirection("http://example.com/"))
@@ -93,7 +99,7 @@ class UrlShortenerControllerTest {
         ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
         // Asumimos que el límite de redirecciones no se ha alcanzado y que la URL es válida
         given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
-        given(isUrlReachableUseCase.isUrlReachable("http://example.com/")).willReturn(true)
+        given(isUrlReachableUseCase.isUrlReachable("http://example.com/","f684a3c4")).willReturn(true)
 
         mockMvc.perform(
             post("/api/link")
@@ -116,7 +122,7 @@ class UrlShortenerControllerTest {
         ).willAnswer { throw InvalidUrlException("ftp://example.com/") }
         // Asumimos que el límite de redirecciones no se ha alcanzado y que la URL es válida
         given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
-        given(isUrlReachableUseCase.isUrlReachable("http://example.com/")).willReturn(true)
+        given(isUrlReachableUseCase.isUrlReachable("http://example.com/","f684a3c4")).willReturn(true)
 
         mockMvc.perform(
             post("/api/link")
@@ -162,7 +168,7 @@ class UrlShortenerControllerTest {
         ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
         // Asumimos que el límite de redirecciones no se ha alcanzado y que la URL es válida
         given(redirectLimitUseCase.newRedirect("key")).willReturn(true)
-        given(isUrlReachableUseCase.isUrlReachable("http://example.com/")).willReturn(true)
+        given(isUrlReachableUseCase.isUrlReachable("http://example.com/","f684a3c4")).willReturn(true)
 
         mockMvc.perform(
             post("/api/link")
