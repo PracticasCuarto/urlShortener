@@ -2,6 +2,7 @@ package es.unizar.urlshortener.infrastructure.messagingrabbitmq
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import es.unizar.urlshortener.core.usecases.IsUrlReachableUseCase
+import es.unizar.urlshortener.core.usecases.MsgUseCaseWriteDBImpl
 
 interface ListenerReachable {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
@@ -9,8 +10,9 @@ interface ListenerReachable {
 }
 
 
-class ListenerReachableImpl (
-    val isUrlReachable: IsUrlReachableUseCase
+class ListenerReachableImpl(
+    val isUrlReachable: IsUrlReachableUseCase,
+    val msgUseCaseWriteDB: MsgUseCaseWriteDBImpl
 ) : ListenerQr {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     override fun receiveMessage(message: String) {
@@ -23,8 +25,10 @@ class ListenerReachableImpl (
         println("Received <$url>")
 
         // Generamos el código QR
-        isUrlReachable.isUrlReachable(url, hash)
-
+        val state = isUrlReachable.isUrlReachable(url, hash)
+        val stateInt = if (state) 1 else 0
+        // escribir en la cola para que escriba en la DB
+        msgUseCaseWriteDB.sendMsg(MessagingRabbitmqApplication.queueName3, "$hash $stateInt")
     }
 
 

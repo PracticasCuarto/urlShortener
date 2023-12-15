@@ -74,14 +74,38 @@ class MessagingRabbitmqApplication {
         return container
     }
 
-    //@Bean
-    //fun listenerAdapter2(receiver2: Receiver2?): MessageListenerAdapter {
-    //    return MessageListenerAdapter(receiver2, "receiveMessage")
-    //}
-
     @Bean
     fun listenerAdapter2(receiver2: ListenerReachableImpl?): MessageListenerAdapter {
         return MessageListenerAdapter(receiver2, "receiveMessage")
+    }
+
+    // COLA 3
+
+    @Bean
+    fun queue3(): Queue {
+        return Queue(queueName3, false)
+    }
+
+    @Bean
+    fun binding3(queue3: Queue?, exchange: TopicExchange?): Binding {
+        return BindingBuilder.bind(queue3).to(exchange).with("DB")
+    }
+
+    @Bean
+    fun container3(
+        connectionFactory: ConnectionFactory?,
+        listenerAdapter3: MessageListenerAdapter?
+    ): SimpleMessageListenerContainer {
+        val container = SimpleMessageListenerContainer()
+        container.connectionFactory = connectionFactory!!
+        container.setQueueNames(queueName3)
+        container.setMessageListener(listenerAdapter3!!)
+        return container
+    }
+
+    @Bean
+    fun listenerAdapter3(receiver3: ListenerWriteDBImpl?): MessageListenerAdapter {
+        return MessageListenerAdapter(receiver3, "receiveMessage")
     }
 
 
@@ -94,6 +118,7 @@ class MessagingRabbitmqApplication {
         const val topicExchangeName = "spring-boot-exchange"
         const val queueName = "cola_1"
         const val queueName2 = "cola_2"
+        const val queueName3 = "cola_3"
         @Throws(InterruptedException::class)
         @JvmStatic
         fun main(args: Array<String>) {

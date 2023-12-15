@@ -20,6 +20,10 @@ class RabbitMQSenderImpl(
         sendMessage("Qr", message)
     }
 
+    override fun sendThirdChannelMessage(message: String) {
+        sendMessage("DB", message)
+    }
+
     private fun sendMessage(channel: String, message: String) {
         println("Sending message to channel $channel...")
         rabbitTemplate.convertAndSend(

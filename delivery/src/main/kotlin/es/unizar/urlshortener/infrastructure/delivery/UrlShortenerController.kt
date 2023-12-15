@@ -166,8 +166,6 @@ class UrlShortenerControllerImpl(
             )
         )
 
-        //msgUseCase.sendMsg("cola_1", "Se ha creado una nueva URL corta con hash: ${result.hash}")
-
         redirectLimitUseCase.addNewRedirect(result.hash, limiteLong)
 
         val h = HttpHeaders()
