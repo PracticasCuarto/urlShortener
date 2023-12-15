@@ -10,7 +10,7 @@ import java.io.File
 const val QRCODEFOLDER: String = "../CodigosQr"
 
 interface QrUseCase {
-    fun generateQRCode(url: String, hash: String): ByteArray
+    fun generateQRCode(url: String, hash: String): Boolean
     fun getQrImageBytes(id: String): ByteArray?
     fun getCodeStatus(hash: String): Int
     fun getInfoForQr(id: String): QrInfo
@@ -55,7 +55,7 @@ class QrUseCaseImpl(
     // Mapa para rastrear el estado de los códigos QR
     private val qrCodeStatusMap: MutableMap<String, Boolean> = mutableMapOf()
 
-    override fun generateQRCode(url: String, hash: String): ByteArray {
+    override fun generateQRCode(url: String, hash: String): Boolean {
         val byteArrayOutputStream = ByteArrayOutputStream()
         QRCode.from(url).to(ImageType.PNG).writeTo(byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
@@ -70,12 +70,6 @@ class QrUseCaseImpl(
         shortUrlEntityRepository.updateHayQr(hash, 2)
 
 
-        //val p1 = getCodeStatus(hash)
-        //println("Valor antes durante el Qr: $p1")
-
-        // Sleep de 5 segundos para simular el tiempo de creación del código QR
-        //Thread.sleep(15000)
-
         // Guardar el código QR en el archivo
         File(outputPath).writeBytes(byteArray)
 
@@ -85,7 +79,7 @@ class QrUseCaseImpl(
         // AÑADIR EN LA BASE QUE QR ESTA CREADO (1)
         shortUrlEntityRepository.updateHayQr(hash, 1)
 
-        return byteArray
+        return true
     }
 
     override fun getQrImageBytes(id: String): ByteArray? {

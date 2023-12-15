@@ -219,7 +219,7 @@ class UrlShortenerControllerTest {
             )
         ).willReturn(ShortUrl("f684a3c4", Redirection("http://example.com/")))
 
-        given(isUrlReachableUseCase.isUrlReachable("http://example.com/","f684a3c4")).willReturn(true)
+        verify(msgUseCaseReachable).sendMsg("cola_2", "f684a3c4 https://example.com/")
 
         mockMvc.perform(
             post("/api/link")
@@ -258,23 +258,34 @@ class UrlShortenerControllerTest {
     }
 
 
-    // Test para comprobar que se devuelve un 404 cuando se intenta acceder a un código QR que no existe
 
     // Test para comprobar que devuelve el código QR cuando se crea correctamente
-//    @Test
-//    fun `getQrImageBytes returns a QR code when it is created correctly`() {
-//        // Configuración del escenario de prueba
-//        val validUrl = "https://example.com"
-//        val validHash = "8ae9a8dc"
-//        val qrCodeBytes = byteArrayOf(1, 2, 3)
-//
-//        given(qrUseCase.generateQRCode(validUrl, validHash))
-//            .willReturn(qrCodeBytes)
-//
-//        // Llamada al endpoint que debería generar el código QR
-//        mockMvc.perform(get("/{id}/qr", validHash))
-//            .andExpect(content().contentType(MediaType.IMAGE_PNG))
-//            .andExpect(content().bytes(qrCodeBytes))
-//    }
+    @Test
+    fun `getQrImageBytes returns a QR code when it is created correctly`() {
+        // Configuración del escenario de prueba
+        val validUrl = "https://example.com/"
+        val validHash = "f684a3c4"
+
+
+        given(
+            createShortUrlUseCase.create(
+                url = "http://example.com/",
+                data = ShortUrlProperties(ip = "127.0.0.1", limit = 0)
+            )
+        ).willReturn(ShortUrl(validHash, Redirection(validUrl)))
+
+        // given? - lo que tiene que ver con salvar en la base de datos la nueva url recortada
+        verify(msgUseCase).sendMsg("cola_1", "f684a3c4 https://example.com/")
+
+        // verify - que se ha guardado en la base de datos (save llamado)
+        // verify - que se ha llamado la función que crea qr
+        mockMvc.perform(
+            post("/api/link")
+                .param("url", "http://example.com/")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        ).andDo(print())
+            .andExpect(status().isCreated)
+
+    }
 
 }
