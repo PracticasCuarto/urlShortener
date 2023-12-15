@@ -1,7 +1,7 @@
 @file:Suppress("WildcardImport","UnusedParameter","MagicNumber","MaxLineLength")
 package es.unizar.urlshortener.core.usecases
 
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.*
 import net.glxn.qrgen.core.image.ImageType
 import net.glxn.qrgen.javase.QRCode
 import java.io.ByteArrayOutputStream
@@ -116,20 +116,23 @@ class QrUseCaseImpl(
     override fun getInfoForQr(id: String): QrInfo {
         val hayQr = shortUrlEntityRepository.obtainHayQr(id)
         val alcanzable = shortUrlEntityRepository.obtainAlcanzable(id)
+        val existeId = shortUrlEntityRepository.existe(id)
         return when {
-            // PARA QUE FUNCIONE DE MOMENTO ALCANZABLE A 0 PORQUE NADIE LO MODIFICA !!!!!!!!!!!!!!!!!!!!!!!!!
-            hayQr == 1 && alcanzable == 1 -> {
-                // La URL corta existe, es redireccionable y tiene un código QR
+            !existeId ->
+                throw InformationNotFound("El id introducido no existe")
+            hayQr == 2 || alcanzable == 2
+
+            ->
+                // La URL corta existe, pero el código QR está en proceso de creación o
+                // no sabemos si es alcanzable o no
+                throw CalculandoException("Qr o URL en proceso de creacion")
+
+            hayQr == 0 || alcanzable == 0->
+                throw InvalidExist( "No se puede redirigir a esta URL corta en este momento")
+
+            else -> {
                 val imageBytes = getQrImageBytes(id)
                 QrInfo(hayQr, alcanzable, imageBytes)
-            }
-            hayQr == 2 -> {
-                // La URL corta existe, pero el código QR está en proceso de creación
-                QrInfo(hayQr, alcanzable, null)
-            }
-            else -> {
-                // Otros casos como no redireccionable, no operativa, spam, etc.
-                QrInfo(hayQr, alcanzable, null)
             }
         }
     }

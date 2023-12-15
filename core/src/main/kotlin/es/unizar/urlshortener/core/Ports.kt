@@ -33,6 +33,7 @@ interface ShortUrlRepositoryService {
 
     fun updateHayQr(hash: String, hayQr: Int)
 
+    fun existe(hash: String): Boolean
 }
 
 interface RabbitMQSenderService {

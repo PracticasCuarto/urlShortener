@@ -1,5 +1,7 @@
 package es.unizar.urlshortener.core.usecases
 
+import es.unizar.urlshortener.core.CalculandoException
+import es.unizar.urlshortener.core.InvalidExist
 import es.unizar.urlshortener.core.ShortUrl
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.io.IOException
@@ -23,6 +25,9 @@ interface IsUrlReachableUseCase {
     fun setCodeStatus(hash: String, status: Int)
 
     fun getCodeStatus(hash: String) : Int
+
+    fun  getInfoForReachable(id: String)
+
 }
 
 /**
@@ -83,6 +88,22 @@ class IsUrlReachableUseCaseImpl(
 
     override fun getCodeStatus(hash: String): Int {
         return shortUrlEntityRepository.obtainAlcanzable(hash)
+    }
+
+    override fun getInfoForReachable(id: String) {
+        val alcanzable = getCodeStatus(id)
+
+        // PARA QUE FUNCIONE DE MOMENTO ALCANZABLE A 0 PORQUE NADIE LO MODIFICA !!!!!!!!!!!!!!!!!!!!!!!!!
+         if (alcanzable == 2){
+             // La URL corta existe, pero el código QR está en proceso de creación o
+             // no sabemos si es alcanzable o no
+             throw CalculandoException("Alcanzabilidad en proceso de creacion")
+         }
+        else if (alcanzable == 0){
+            throw InvalidExist( "No se puede redirigir a esta URL")
+
+        }
+
     }
 }
 
