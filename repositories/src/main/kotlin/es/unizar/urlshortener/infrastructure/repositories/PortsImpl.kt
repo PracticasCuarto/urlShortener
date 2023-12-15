@@ -48,6 +48,10 @@ class ShortUrlRepositoryServiceImpl(
         return shortUrlEntityRepository.findByHash(hash)?.hayQr ?: 0
     }
 
+    override fun existe(hash: String): Boolean {
+        return shortUrlEntityRepository.findByHash(hash) != null
+    }
+
     override fun updateAlcanzable(hash: String, alcanzable: Int) {
         shortUrlEntityRepository.findByHash(hash)?.apply {
             this.alcanzable = alcanzable

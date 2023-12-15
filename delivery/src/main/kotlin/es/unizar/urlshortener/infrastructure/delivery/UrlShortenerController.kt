@@ -5,9 +5,7 @@ package es.unizar.urlshortener.infrastructure.delivery
 
 import com.maxmind.geoip2.DatabaseReader
 import com.maxmind.geoip2.model.CityResponse
-import es.unizar.urlshortener.core.ClickProperties
-import es.unizar.urlshortener.core.RabbitMQSenderService
-import es.unizar.urlshortener.core.ShortUrlProperties
+import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.*
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.beans.factory.annotation.Value
@@ -127,6 +125,10 @@ class UrlShortenerControllerImpl(
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
         val propiedades = obtenerInformacionUsuario(userAgent, request)
+
+        // Casos de error alcanzabilidad
+        isUrlReachableUseCase.getInfoForReachable(id)
+
 
         if (!redirectLimitUseCase.newRedirect(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
@@ -288,44 +290,16 @@ class UrlShortenerControllerImpl(
 
     @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
     fun returnQr(@PathVariable id: String, @RequestHeader(value = "User-Agent", required = false)
-    userAgent: String?): ResponseEntity<out Serializable> {
+    userAgent: String?): ResponseEntity<*> {
         // Obtener información sobre la URL corta utilizando la nueva función
         val qrInfo = qrUseCase.getInfoForQr(id)
 
-        return when {
-            // PARA QUE FUNCIONE DE MOMENTO ALCANZABLE A 0 PORQUE NADIE LO MODIFICA !!!!!!!!!!!!!!!!!!!!!!!!!
-            qrInfo.hayQr == 1 && qrInfo.alcanzable == 1 -> {
-                // La URL corta existe, es redireccionable y tiene un código QR, devolver QR
-                return qrInfo.imageBytes?.let {
-                    ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(it)
-                } ?: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error al obtener el código QR")
-            }
-            qrInfo.hayQr == 2 -> {
-                // La URL corta existe, pero el código QR está en proceso de creación
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .header("Retry-After", "10")
-                    .body("Código QR en proceso de creación")
-            }
-            else -> {
-                // Otros casos como no redireccionable, no operativa, spam, etc.
-                // Puedes agregar lógica adicional según tus necesidades
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("No se puede redirigir a esta URL corta en este momento")
-            }
-        }
+        // La URL corta existe, es redireccionable y tiene un código QR, devolver QR
+        return qrInfo.imageBytes?.let {
+            ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(it)
+        } ?: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body("Error al obtener el código QR")
 
-        /*
-
-            COSAS A ACABAR Y VER COMO SACAR:
-                * Si la URI recortada existe --> Esto implica que si el hayQr es 1 o 2 es que si que existe
-                * Si se ha confirmado que se puede realizar la redirección --> alcanzable¿?
-                * Como hacer: "¿todavía no se ha confirmado si se puede o no realizar la redirección?"
-                * Como hacer: "se han enviado demasiadas peticiones durante una cantidad de tiempo determinada"
-                * No puede utilizarse para redirecciones porque no está operativa
-                * No puede ser utilizada para redirecciones por spam
-         */
     }
-
 
 }

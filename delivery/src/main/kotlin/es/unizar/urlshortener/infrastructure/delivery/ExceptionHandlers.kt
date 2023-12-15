@@ -1,9 +1,10 @@
+@file:Suppress("WildcardImport")
+
 package es.unizar.urlshortener.infrastructure.delivery
 
-import es.unizar.urlshortener.core.InformationNotFound
-import es.unizar.urlshortener.core.InvalidUrlException
-import es.unizar.urlshortener.core.RedirectionNotFound
+import es.unizar.urlshortener.core.*
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
@@ -20,15 +21,23 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun invalidUrls(ex: InvalidUrlException) = ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message)
 
-    @ResponseBody
-    @ExceptionHandler(value = [RedirectionNotFound::class])
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    fun redirectionNotFound(ex: RedirectionNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
 
     @ResponseBody
-    @ExceptionHandler(value = [InformationNotFound::class])
+    @ExceptionHandler(value = [InformationNotFound::class ,RedirectionNotFound::class])
     @ResponseStatus(HttpStatus.NOT_FOUND)
     fun informationNotFound(ex: InformationNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
+
+
+    @ExceptionHandler(value = [CalculandoException::class])
+    fun calculandoException(ex: CalculandoException) = ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .header("Retry-After", "10")
+        .body(ErrorMessage(HttpStatus.BAD_REQUEST.value(), ex.message))
+
+    @ResponseBody
+    @ExceptionHandler(value = [InvalidExist::class])
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    fun invalidUrls(ex: InvalidExist) = ErrorMessage(HttpStatus.FORBIDDEN.value(), ex.message)
+
 }
 
 data class ErrorMessage(
