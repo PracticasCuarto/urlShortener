@@ -52,6 +52,9 @@ interface RedirectLimitUseCase {
     // Función para buscar un elemento en la lista por hash
     fun obtainRedirectByHash(hashActual: String): Redirects?
 
+    // Funcion que borra el contenido de la lista de redirecciones
+    fun clearRedirectsList()
+
 }
 
 /**
@@ -130,7 +133,7 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
      * @param hash The hash associated with the shortened link.
      * @param limit The maximum number of redirects allowed in an hour.
      */
-    override fun `addNewRedirect`(hash: String, limite: Long) {
+    override fun addNewRedirect(hash: String, limite: Long) {
 
         var limit: Bandwidth = Bandwidth.builder()
             .capacity( if (limite == 0L) 1 else limite)
@@ -155,6 +158,11 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
     // Función para buscar un elemento en la lista por hash
     override fun obtainRedirectByHash(hashActual: String): Redirects? {
         return redirectsList.find { it.hash == hashActual }
+    }
+
+    // Funcion que borra el contenido de la lista de redirecciones
+    override fun clearRedirectsList() {
+        redirectsList.clear()
     }
 
 }

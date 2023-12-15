@@ -16,6 +16,14 @@ class ClickRepositoryServiceImpl(
 
     override fun findByHash(hash: String): List<Click> = clickEntityRepository.findByHash(hash).map { it.toDomain() }
 
+    override fun obtainNumClicks(hash: String): Int {
+        return clickEntityRepository.findByHash(hash).size
+    }
+
+    override fun obtainNumClicks(): Int {
+        return clickEntityRepository.findAll().size
+    }
+
 }
 
     /**

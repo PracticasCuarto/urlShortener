@@ -5,6 +5,7 @@ package es.unizar.urlshortener.core.usecases
 
 import es.unizar.urlshortener.core.ClickRepositoryService
 import es.unizar.urlshortener.core.InformationNotFound
+import es.unizar.urlshortener.core.ShortUrlRepositoryService
 
 /**
  * Use case interface for returning information about users who have clicked a shortened link.
@@ -18,7 +19,7 @@ interface ReturnInfoUseCase {
      * @return A list of [Info] objects representing user click information.
      * @throws InformationNotFound if no information is found for the given key.
      */
-    fun returnInfo(key: String): List<Info>
+    fun returnInfo(key: String): InfoHash
 }
 
 /**
@@ -34,13 +35,21 @@ data class Info(
     val browser: String? = null
 )
 
+data class InfoHash(
+    val limit: Long? = null,
+    var numRedirecciones: Int? = null,
+    var lista: List<Info>? = null
+)
+
 /**
  * Implementation of the [ReturnInfoUseCase] interface.
  *
  * @property clickRepository Service for accessing click-related data in the repository.
  */
 class ReturnInfoUseCaseImpl(
-    private val clickRepository: ClickRepositoryService
+    private val clickRepository: ClickRepositoryService,
+    private val shortUrlRepository: ShortUrlRepositoryService,
+    private val redirectLimitUseCaseImpl : RedirectLimitUseCase
 ) : ReturnInfoUseCase {
 
     /**
@@ -50,15 +59,27 @@ class ReturnInfoUseCaseImpl(
      * @return A list of [Info] objects representing user click information.
      * @throws InformationNotFound if no information is found for the given key.
      */
-    override fun returnInfo(key: String): List<Info> {
+    override fun returnInfo(key: String): InfoHash {
         val clickList = clickRepository.findByHash(key)
 
         if (clickList.isEmpty()) {
             throw InformationNotFound("No information found for key: $key")
         }
 
-        return clickList.map {
+        val listInfo =  clickList.map {
             Info(it.properties.ip, it.properties.os, it.properties.browser)
         }
+
+        val limite = shortUrlRepository.obtainLimit(key)
+        val redirecciones : Int
+        if (limite == 0L) {
+            redirecciones = clickList.size
+        } else {
+            redirecciones = redirectLimitUseCaseImpl.obtainNumberOfRedirectsByHash(key)
+        }
+
+
+
+        return InfoHash(limite, redirecciones, listInfo)
     }
 }

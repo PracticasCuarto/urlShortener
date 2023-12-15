@@ -11,7 +11,6 @@ import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.web.servlet.MockMvc
@@ -19,7 +18,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
-import java.net.HttpURLConnection
 
 @WebMvcTest
 @ContextConfiguration(
@@ -137,14 +135,15 @@ class UrlShortenerControllerTest {
         fun `returnInfo returns a list of info when the key exists`() {
             // Hacer una petición con argumentos os: Windows, browser: Chrome
             given(returnInfoUseCase.returnInfo("key"))
-                .willReturn(listOf(Info("0:0:0:0:0:0:0:1", "Macintosh", "Chrome")))
+                .willReturn(InfoHash(0,0,
+                    listOf(Info("0:0:0:0:0:0:0:1", "Macintosh", "Chrome"))))
 
             mockMvc.perform(get("/api/link/{id}", "key"))
                 .andExpect(status().isOk)
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].ip").value("0:0:0:0:0:0:0:1"))
-                .andExpect(jsonPath("$[0].os").value("Macintosh"))
-                .andExpect(jsonPath("$[0].browser").value("Chrome"))
+                .andExpect(jsonPath("lista[0].ip").value("0:0:0:0:0:0:0:1"))
+                .andExpect(jsonPath("lista[0].os").value("Macintosh"))
+                .andExpect(jsonPath("lista[0].browser").value("Chrome"))
         }
 
     @Test
@@ -244,6 +243,20 @@ class UrlShortenerControllerTest {
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.statusCode").value(404))
     }
+    @Test
+    fun `returnSystemInfo returns the four metrics correctly`() {
+        given(returnSystemInfoUseCase.returnSystemInfo("key"))
+            .willReturn(SystemInfo(1.0, 2.0, 3, 4))
+
+        mockMvc.perform(get("/api/stats/metrics/{id}", "key"))
+            .andExpect(status().isOk)
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(jsonPath("$.memoryUsed").value(1.0))
+            .andExpect(jsonPath("$.upTime").value(2.0))
+            .andExpect(jsonPath("$.totalRedirecciones").value(3))
+            .andExpect(jsonPath("$.totalRedireccionesHash").value(4))
+    }
+
 
     // Test para comprobar que se devuelve un 404 cuando se intenta acceder a un código QR que no existe
 

@@ -1,5 +1,6 @@
 
-@file:Suppress("WildcardImport", "MaxLineLength", "ReturnCount", "LongParameterList", "UnusedPrivateProperty", "UnusedParameter", "FunctionOnlyReturningConstant")
+@file:Suppress("WildcardImport", "ReturnCount", "LongParameterList", "UnusedPrivateProperty",
+    "UnusedParameter", "FunctionOnlyReturningConstant")
 package es.unizar.urlshortener.infrastructure.delivery
 
 import com.maxmind.geoip2.DatabaseReader
@@ -21,9 +22,9 @@ import org.springframework.web.bind.annotation.*
 import ua_parser.Parser
 import java.io.File
 import java.io.Serializable
-import java.net.HttpURLConnection
 import java.net.InetAddress
 import java.net.URI
+
 
 //This site or product includes IP2Location LITE data available from
 // <a href="https://lite.ip2location.com">https://lite.ip2location.com</a>.
@@ -61,7 +62,7 @@ interface UrlShortenerController {
      *
      * **Note**: Delivery of use case [CreateShortUrlUseCase].
      */
-    fun returnInfo(id: String): List<Info>
+    fun returnInfo(id: String): InfoHash
 
     fun returnSystemInfo(@PathVariable id: String): SystemInfo
 }
@@ -139,7 +140,8 @@ class UrlShortenerControllerImpl(
 
     // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
 
-    @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
+    @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE], produces =
+    [MediaType.APPLICATION_JSON_VALUE])
     override fun shortener(
         data: ShortUrlDataIn,
         request: HttpServletRequest,
@@ -151,7 +153,8 @@ class UrlShortenerControllerImpl(
         var limiteLong: Long = limiteALong(limit)
 
         if (limiteLong < 0) {
-            return ResponseEntity(Error(HttpStatus.BAD_REQUEST.value(), "El límite debe ser mayor o igual que 0"), HttpStatus.BAD_REQUEST)
+            return ResponseEntity(Error(HttpStatus.BAD_REQUEST.value(),
+                "El límite debe ser mayor o igual que 0"), HttpStatus.BAD_REQUEST)
         }
 
         val result = createShortUrlUseCase.create(
@@ -238,7 +241,7 @@ class UrlShortenerControllerImpl(
     }
 
     @GetMapping("/api/link/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
-    override fun returnInfo(@PathVariable id: String): List<Info> = returnInfoUseCase.returnInfo(id)
+    override fun returnInfo(@PathVariable id: String): InfoHash = returnInfoUseCase.returnInfo(id)
 
     @GetMapping("/api/stats/metrics/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnSystemInfo(@PathVariable id: String):
@@ -286,7 +289,8 @@ class UrlShortenerControllerImpl(
     //data class ErrorResponse(val error: String, val message: String)
 
     @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
-    fun returnQr(@PathVariable id: String, @RequestHeader(value = "User-Agent", required = false) userAgent: String?): ResponseEntity<out Serializable> {
+    fun returnQr(@PathVariable id: String, @RequestHeader(value = "User-Agent", required = false)
+    userAgent: String?): ResponseEntity<out Serializable> {
         // Obtener información sobre la URL corta utilizando la nueva función
         val qrInfo = qrUseCase.getInfoForQr(id)
 

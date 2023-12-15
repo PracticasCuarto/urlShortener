@@ -10,6 +10,9 @@ interface ClickRepositoryService {
 
     fun findByHash(hash: String): List<Click>
 
+    fun obtainNumClicks(hash: String): Int
+
+    fun obtainNumClicks(): Int
 
 }
 
