@@ -55,13 +55,14 @@ class ApplicationConfiguration(
         CreateShortUrlUseCaseImpl(shortUrlRepositoryService(), validatorService(), hashService())
 
     @Bean
-    fun returnInfoUseCase() = ReturnInfoUseCaseImpl(clickRepositoryService())
+    fun returnInfoUseCase() = ReturnInfoUseCaseImpl(clickRepositoryService(), shortUrlRepositoryService(),
+        redirectLimitUseCase())
 
     @Bean
     fun redirectLimitUseCase() = RedirectLimitUseCaseImpl()
 
     @Bean
-    fun returnSystemInfoUseCase() = ReturnSystemInfoUseCaseImpl(metricsEndpoint, redirectLimitUseCase())
+    fun returnSystemInfoUseCase() = ReturnSystemInfoUseCaseImpl(metricsEndpoint, clickRepositoryService())
 
     @Bean
     fun isUrlReachableUseCase(shortUrlRepositoryService: ShortUrlRepositoryService) =
