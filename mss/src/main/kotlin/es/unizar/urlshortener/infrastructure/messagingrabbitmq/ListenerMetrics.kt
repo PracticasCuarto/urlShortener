@@ -20,18 +20,20 @@ class ListenerMetricsImpl : ListenerMetrics {
 
         val url = "http://localhost:8080/api/update/metrics"
 
-        val (_, response, result) = url
-            .httpPost()
-            .body(message)
-            .responseString()
+//        val (_, response, result) = url
+//            .httpPost()
+//            .body(message)
+//            .responseString()
+//
+//        when (result) {
+//            is Result.Success -> {
+//                println("POST request successful. Response: ${response.body().asString("application/json")}")
+//            }
+//            is Result.Failure -> {
+//                println("POST request failed. Error: ${result.error}")
+//            }
+//        }
 
-        when (result) {
-            is Result.Success -> {
-                println("POST request successful. Response: ${response.body().asString("application/json")}")
-            }
-            is Result.Failure -> {
-                println("POST request failed. Error: ${result.error}")
-            }
-        }
+        println("POST request successful. Response: ${message}")
     }
 }
