@@ -88,6 +88,9 @@ class ApplicationConfiguration(
     fun msgUseCaseUpdateMetrics() = MsgUseCaseUpdateMetricsImpl(rabbitMQSenderService())
 
     @Bean
+    fun msgUseCaseLocation() = MsgUseCaseLocationImpl(rabbitMQSenderService())
+
+    @Bean
     fun listenerQr() = ListenerQrImpl(qrUseCase())
 
     @Bean
@@ -99,5 +102,8 @@ class ApplicationConfiguration(
 
     @Bean
     fun listenerMetrics() = ListenerMetricsImpl()
+
+    @Bean
+    fun listenerLocation() = ListenerLocationImpl(locationUseCase())
 
 }

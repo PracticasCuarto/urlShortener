@@ -1,5 +1,6 @@
 package es.unizar.urlshortener.infrastructure.messagingrabbitmq
 
+import es.unizar.urlshortener.core.usecases.LocationUseCase
 import es.unizar.urlshortener.core.usecases.QrUseCase
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 
@@ -10,20 +11,22 @@ interface ListenerLocation {
 
 
 class ListenerLocationImpl (
-    val qrUseCase: QrUseCase
+    val locationUseCase: LocationUseCase
 ) : ListenerLocation {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName])
     override fun receiveMessage(message: String) {
-        println("Received HEMOS CONSEGIUDO ENTRAR EN EL METODO LISTENER")
+        println("Received procesando location <$message>")
 
-        // troceamos la entrada teniendo en cuenta el primer espacio para separar hash de url
-        val hash = message.substringBefore(" ")
-        val url = message.substringAfter(" ")
-        println("Received <$hash>")
-        println("Received <$url>")
+        // troceamos la entrada teniendo en cuenta el primer espacio para separar valores
+
+        val userAgent = message.substringBefore(" ")
+        val request = message.substringAfter(" ")
+
+        println("Received <$userAgent>")
+        println("Received <$request>")
 
         // Generamos el código QR
-        qrUseCase.generateQRCode(url, hash)
+//        locationUseCase.obtenerInformacionUsuario(userAgent, request)
 
     }
 
