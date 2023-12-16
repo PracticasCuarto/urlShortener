@@ -7,7 +7,7 @@ import es.unizar.urlshortener.core.RabbitMQSenderService
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.stereotype.Component
 
-@Component("customRabbitMQSender")
+//@Component("customRabbitMQSender")
 class RabbitMQSenderImpl(
     private val rabbitTemplate: RabbitTemplate
 ) : RabbitMQSenderService {

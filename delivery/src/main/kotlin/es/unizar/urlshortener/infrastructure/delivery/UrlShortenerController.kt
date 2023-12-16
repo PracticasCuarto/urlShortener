@@ -113,9 +113,9 @@ class UrlShortenerControllerImpl(
     val qrUseCase: QrUseCase,                        //añadimos el nuevo UseCase del Qr
     val locationUseCase: LocationUseCase,
     val msgUseCase: MsgUseCase,
-    val msgUseCaseReachable: MsgUseCaseReachable,
     val msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics,
     val msgUseCaseLocation: MsgUseCaseLocation,
+    val rabbitSender: RabbitMQSenderService
 
 ) : UrlShortenerController {
 
@@ -206,25 +206,8 @@ class UrlShortenerControllerImpl(
         isUrlReachableUseCase.setCodeStatus(result.hash, 2)
         println("calculando alcanzabilidad...")
         println("Valor del alcanzable: ${isUrlReachableUseCase.getCodeStatus(result.hash)}")
-        /*if (!isUrlReachableUseCase.isUrlReachable(data.url, result.hash)) {
-            println("La URL no es alcanzable")
-            // indicamos en la db que no es alcanzable
-            // isUrlReachableUseCase.setCodeStatus(result.hash, 0)
-            // construimos el Error return
-            val response1 = Error(
-                statusCode = HttpStatus.BAD_REQUEST.value(),
-                message = "URI de destino no alcanzable"
-            )
-            println("Valor del alcanzable: ${isUrlReachableUseCase.getCodeStatus(result.hash)}")
-            return ResponseEntity(response1,HttpStatus.BAD_REQUEST)
-        }
-        else {
-            println("La URL es alcanzable")
-            // indicamos en la db que es alcanzable
-            // isUrlReachableUseCase.setCodeStatus(result.hash, 1)
-        }*/
-        msgUseCaseReachable.sendMsg("cola_2", "${result.hash} ${data.url}")
-        println("Valor del alcanzable: ${isUrlReachableUseCase.getCodeStatus(result.hash)}")
+        //msgUseCaseReachable.sendMsg("cola_2", "${result.hash} ${data.url}")
+        rabbitSender.sendSecondChannelMessage("${result.hash} ${data.url}")
         // ---------------------------------------------------------------
 
         return ResponseEntity(response, h, HttpStatus.CREATED)

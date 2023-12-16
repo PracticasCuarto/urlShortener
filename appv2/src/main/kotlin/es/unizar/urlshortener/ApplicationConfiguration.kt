@@ -79,9 +79,6 @@ class ApplicationConfiguration(
     fun msgUseCase() = MsgUseCaseImpl(rabbitMQSenderService())
 
     @Bean
-    fun msgUseCaseReachable() = MsgUseCaseReachableImpl(rabbitMQSenderService())
-
-    @Bean
     fun msgUseCaseWriteDB() = MsgUseCaseWriteDBImpl(rabbitMQSenderService())
 
     @Bean

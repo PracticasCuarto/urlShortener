@@ -63,7 +63,16 @@ class UrlShortenerControllerTest {
     private lateinit var msgUseCase: MsgUseCase
 
     @MockBean
-    private lateinit var msgUseCaseReachable: MsgUseCaseReachable
+    private lateinit var rabbitMQSender: RabbitMQSenderService
+
+    @MockBean
+    private lateinit var locationUseCase: LocationUseCase
+
+    @MockBean
+    private lateinit var msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics
+
+    @MockBean
+    private lateinit var msgUseCaseLocation: MsgUseCaseLocation
 
 
     @Test
@@ -99,15 +108,14 @@ class UrlShortenerControllerTest {
         ).andDo(print())
             .andExpect(status().isCreated)
 
-        verify(msgUseCaseReachable).sendMsg("cola_2", "f684a3c4 http://example.com/")
+        //verify(msgUseCaseReachable).sendMsg("cola_2", "f684a3c4 http://example.com/")
+        verify(rabbitMQSender).sendSecondChannelMessage("f684a3c4 http://example.com/")
 
     }
 
     // Test que comprueba el funcionamiento del isUrlReachableUseCase si NO es alcanzable
     @Test
     fun `isUrlReachable returns a forbidden if the url is not reachable`() {
-        //given(isUrlReachableUseCase.isUrlReachable("http://notexample.com/","f684a3c4")).willReturn(false)
-
         given(isUrlReachableUseCase.getInfoForReachable("f684a3c4"))
             .willAnswer { throw InvalidExist("No se puede redirigir a esta URL") }
 
