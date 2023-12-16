@@ -11,7 +11,7 @@ interface ListenerWriteDB {
 
 class ListenerWriteDBImpl (
     val isUrlReachable: IsUrlReachableUseCase
-) : ListenerQr {
+) : ListenerWriteDB {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     override fun receiveMessage(message: String) {
         println("Received message queque WriteDB")

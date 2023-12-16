@@ -13,7 +13,7 @@ interface ListenerReachable {
 class ListenerReachableImpl(
     val isUrlReachable: IsUrlReachableUseCase,
     val msgUseCaseWriteDB: MsgUseCaseWriteDBImpl
-) : ListenerQr {
+) : ListenerReachable {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     override fun receiveMessage(message: String) {
         println("Received message queque Reachable")

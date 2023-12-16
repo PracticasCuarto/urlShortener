@@ -29,7 +29,7 @@ class ListenerMetricsImpl : ListenerMetrics {
 
         // Hacer una peticion POST a /api/update/metrics
 
-        val url = "http://localhost:8080/api/update/metrics"
+//        val url = "http://localhost:8080/api/update/metrics"
 
 //        runBlocking {
 //            try {
