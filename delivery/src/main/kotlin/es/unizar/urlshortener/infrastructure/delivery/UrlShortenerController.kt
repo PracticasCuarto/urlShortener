@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.web.bind.annotation.*
 import ua_parser.Parser
 import java.io.File
@@ -64,7 +65,9 @@ interface UrlShortenerController {
 
     fun returnSystemInfo(@PathVariable id: String): SystemInfo
 
-     fun updateSystemInfo(@PathVariable id: String)
+     fun updateSystemInfoURL(@PathVariable id: String)
+
+    fun updateSystemInfoAutomatic()
 }
 
 /**
@@ -111,7 +114,8 @@ class UrlShortenerControllerImpl(
     var isUrlReachableUseCase: IsUrlReachableUseCase,
     val qrUseCase: QrUseCase,                        //añadimos el nuevo UseCase del Qr
     val msgUseCase: MsgUseCase,
-    val msgUseCaseReachable: MsgUseCaseReachable
+    val msgUseCaseReachable: MsgUseCaseReachable,
+    val msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics
 
 ) : UrlShortenerController {
 
@@ -251,7 +255,7 @@ class UrlShortenerControllerImpl(
             SystemInfo = returnSystemInfoUseCase.returnSystemInfo(id)
 
     @PostMapping("/api/update/metrics")
-    override fun updateSystemInfo(@PathVariable id: String) {
+    override fun updateSystemInfoURL(@PathVariable id: String) {
         returnSystemInfoUseCase.updateSystemInfo()
     }
 
@@ -308,6 +312,12 @@ class UrlShortenerControllerImpl(
         } ?: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body("Error al obtener el código QR")
 
+    }
+
+    @Scheduled(fixedRate = 6000)
+    override fun updateSystemInfoAutomatic() {
+        // Escribir en cola de rabbit que se actualice
+        msgUseCaseUpdateMetrics.sendMsg("cola_3", "update")
     }
 
 }

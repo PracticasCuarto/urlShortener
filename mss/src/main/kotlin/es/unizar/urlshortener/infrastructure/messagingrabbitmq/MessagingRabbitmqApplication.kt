@@ -114,11 +114,41 @@ class MessagingRabbitmqApplication {
         return RabbitTemplate(connectionFactory)
     }
 
+    // COLA 4
+
+    @Bean
+    fun queue4(): Queue {
+        return Queue(queueName4, false)
+    }
+
+    @Bean
+    fun binding4(queue4: Queue?, exchange: TopicExchange?): Binding {
+        return BindingBuilder.bind(queue4).to(exchange).with("Metrics")
+    }
+
+    @Bean
+    fun container4(
+        connectionFactory: ConnectionFactory?,
+        listenerAdapter4: MessageListenerAdapter?
+    ): SimpleMessageListenerContainer {
+        val container = SimpleMessageListenerContainer()
+        container.connectionFactory = connectionFactory!!
+        container.setQueueNames(queueName4)
+        container.setMessageListener(listenerAdapter4!!)
+        return container
+    }
+
+    @Bean
+    fun listenerAdapter4(receiver4: ListenerReachableImpl?): MessageListenerAdapter {
+        return MessageListenerAdapter(receiver4, "receiveMessage")
+    }
+
     companion object {
         const val topicExchangeName = "spring-boot-exchange"
         const val queueName = "cola_1"
         const val queueName2 = "cola_2"
         const val queueName3 = "cola_3"
+        const val queueName4 = "cola_4"
         @Throws(InterruptedException::class)
         @JvmStatic
         fun main(args: Array<String>) {

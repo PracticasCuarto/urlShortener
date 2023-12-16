@@ -24,6 +24,10 @@ class RabbitMQSenderImpl(
         sendMessage("DB", message)
     }
 
+    override fun sendMetricsChannelMessage(message: String) {
+        sendMessage("Metrics", message)
+    }
+
     private fun sendMessage(channel: String, message: String) {
         println("Sending message to channel $channel...")
         rabbitTemplate.convertAndSend(

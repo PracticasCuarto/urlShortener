@@ -6,9 +6,7 @@ import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import es.unizar.urlshortener.core.usecases.*
 import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
-import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerQrImpl
-import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerReachableImpl
-import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerWriteDBImpl
+import es.unizar.urlshortener.infrastructure.messagingrabbitmq.*
 import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
@@ -17,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.actuate.metrics.MetricsEndpoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import es.unizar.urlshortener.infrastructure.messagingrabbitmq.RabbitMQSenderImpl
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 
 
@@ -85,6 +82,9 @@ class ApplicationConfiguration(
     fun msgUseCaseWriteDB() = MsgUseCaseWriteDBImpl(rabbitMQSenderService())
 
     @Bean
+    fun msgUseCaseUpdateMetrics() = MsgUseCaseUpdateMetricsImpl(rabbitMQSenderService())
+
+    @Bean
     fun listenerQr() = ListenerQrImpl(qrUseCase())
 
     @Bean
@@ -93,5 +93,8 @@ class ApplicationConfiguration(
 
     @Bean
     fun listenerWriteDB() = ListenerWriteDBImpl(isUrlReachableUseCase(shortUrlRepositoryService()))
+
+    @Bean
+    fun listenerMetrics() = ListenerMetricsImpl()
 
 }

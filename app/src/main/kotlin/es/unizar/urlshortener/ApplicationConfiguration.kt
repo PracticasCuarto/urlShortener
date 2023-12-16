@@ -67,4 +67,7 @@ class ApplicationConfiguration(
     @Bean
     fun qrUseCase() = QrUseCaseImpl(shortUrlRepositoryService())
 
+    @Bean
+
+
 }
