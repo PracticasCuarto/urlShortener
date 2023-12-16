@@ -123,7 +123,7 @@ class UrlShortenerControllerImpl(
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
          val propiedades = locationUseCase.obtenerInformacionUsuario(userAgent, request.remoteAddr)
-        msgUseCaseLocation.sendMsg("cola_3", "update")
+        msgUseCaseLocation.sendMsg("cola_3", userAgent + "||||||" + request.remoteAddr)
 
         // Casos de error alcanzabilidad
         isUrlReachableUseCase.getInfoForReachable(id)

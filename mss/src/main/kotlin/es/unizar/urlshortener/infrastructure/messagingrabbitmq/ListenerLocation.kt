@@ -19,8 +19,8 @@ class ListenerLocationImpl (
 
         // troceamos la entrada teniendo en cuenta el primer espacio para separar valores
 
-        val userAgent = message.substringBefore(" ")
-        val request = message.substringAfter(" ")
+        val userAgent = message.substringBefore("||||||")
+        val request = message.substringAfter("||||||")
 
         println("Received <$userAgent>")
         println("Received <$request>")
