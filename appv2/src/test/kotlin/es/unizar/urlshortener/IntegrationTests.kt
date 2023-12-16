@@ -2,8 +2,8 @@
 
 package es.unizar.urlshortener
 
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import com.fasterxml.jackson.databind.ObjectMapper
+import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseBadMock
 import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseGoodMock
 import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataOut
@@ -151,7 +151,7 @@ class HttpRequestTest {
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
         headers["X-Forwarded-For"] = specifiedIp
-        restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Imprime el contenido de la tabla "click" de la base de datos
         val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
@@ -179,7 +179,11 @@ class HttpRequestTest {
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
         headers["X-Forwarded-For"] = specifiedIp
-        restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+
+        // Imprime el contenido de la tabla "click" de la base de datos
+        val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
+        println("Contenido de la tabla 'click': $clickTableContent")
 
         // Verifica que la IP especificada esté en la base de datos
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
@@ -277,9 +281,9 @@ class HttpRequestTest {
         val response = shortUrl("http://example.com/")
 
         // Assertions
-        assertThat(response.statusCode).isEqualTo(HttpStatus.BAD_REQUEST)
-        assertThat(response.headers.location).isNull()
-        assertThat(response.body?.url).isEqualTo(null)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.CREATED)
+        assertThat(response.headers.location).isNotNull
+        assertThat(response.body?.url).isEqualTo(response.headers.location)
     }
 
     // Test que comprueba que cuando se hace una redireccion a una URL, se sume 1 a la metrica de totalRedirecciones
@@ -445,7 +449,6 @@ class HttpRequestTest {
         }
     }
 
-
     private fun getTotalRedireccionesMetric(): Int {
         // Obtener el valor de la métrica totalRedirecciones desde el endpoint JSON
         val statsEndpoint = "http://localhost:$port/api/stats/metrics/f684a3c4"
@@ -461,6 +464,5 @@ class HttpRequestTest {
         // Parsear el JSON para obtener el valor de la métrica totalRedireccionesHash
         return ObjectMapper().readTree(metricResponse.body).get("totalRedireccionesHash").asInt()
     }
-
 
 }

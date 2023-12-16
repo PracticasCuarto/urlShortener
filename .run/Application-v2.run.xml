@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Application-v2" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="urlShortener.appv2.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="es.unizar.urlshortener.Application" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/appv2" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,0 +1,27 @@
+# Spring Datasource
+spring:
+  datasource:
+    url: jdbc:hsqldb:file:./app/build/db/baseDatos
+    username: sa
+    password:
+    driverClassName: org.hsqldb.jdbc.JDBCDriver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.HSQLDialect
+
+# Actuator Endpoints
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    enable:
+      uptime: true
+      memory: true

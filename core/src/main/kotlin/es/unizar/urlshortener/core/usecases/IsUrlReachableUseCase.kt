@@ -1,5 +1,8 @@
 package es.unizar.urlshortener.core.usecases
 
+import es.unizar.urlshortener.core.CalculandoException
+import es.unizar.urlshortener.core.InvalidExist
+import es.unizar.urlshortener.core.ShortUrl
 import es.unizar.urlshortener.core.ShortUrlRepositoryService
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -17,11 +20,14 @@ private const val WAIT_TIME = 1000L
  * If the url is not reachable, the status code will be 400 (HTTP_BAD_REQUEST).
  */
 interface IsUrlReachableUseCase {
-    fun isUrlReachable(urlString: String): Boolean
+    fun isUrlReachable(urlString: String, hash: String): Boolean
 
     fun setCodeStatus(hash: String, status: Int)
 
     fun getCodeStatus(hash: String) : Int
+
+    fun  getInfoForReachable(id: String)
+
 }
 
 /**
@@ -36,12 +42,12 @@ class IsUrlReachableUseCaseImpl(
 
         connection.responseCode == HttpURLConnection.HTTP_OK
 
-}
+},
+            val shortUrlEntityRepository: ShortUrlRepositoryService
 ) : IsUrlReachableUseCase {
 
-    private val shortUrlEntityRepository: ShortUrlRepositoryService? = null
 
-    override fun isUrlReachable(urlString: String): Boolean {
+    override fun isUrlReachable(urlString: String, hash: String): Boolean {
         var attempt = 0
         while (attempt < MAX_ATTEMPTS) {
             runCatching {
@@ -73,16 +79,37 @@ class IsUrlReachableUseCaseImpl(
     override fun setCodeStatus(hash: String, status: Int) {
         // escribimos en la base de datos el estado del calculo de la alcanzabilidad
         // 0 no existe, 1 creado y 2 creandose.
-        shortUrlEntityRepository?.updateAlcanzable(hash, status)
+        println("Me piden que guarde esto en la DB <$status>")
+        shortUrlEntityRepository.updateAlcanzable(hash, status)
     }
 
     override fun getCodeStatus(hash: String): Int {
-        return shortUrlEntityRepository?.obtainAlcanzable(hash) ?: 0
+        return shortUrlEntityRepository.obtainAlcanzable(hash)
+    }
+
+    override fun getInfoForReachable(id: String) {
+        val alcanzable = getCodeStatus(id)
+
+
+        // PARA QUE FUNCIONE DE MOMENTO ALCANZABLE A 0 PORQUE NADIE LO MODIFICA !!!!!!!!!!!!!!!!!!!!!!!!!
+         if (alcanzable == 2){
+             // La URL corta existe, pero el código QR está en proceso de creación o
+             // no sabemos si es alcanzable o no
+             throw CalculandoException("Alcanzabilidad en proceso de creacion")
+         }
+        else if (alcanzable == 0){
+            throw InvalidExist( "No se puede redirigir a esta URL")
+        }
+
     }
 }
 
-val isUrlReachableUseCaseGoodMock = IsUrlReachableUseCaseImpl( { true })
-val isUrlReachableUseCaseBadMock = IsUrlReachableUseCaseImpl( { false })
+fun isUrlReachableUseCaseGoodMock( shortUrlEntityRepository:
+                                   ShortUrlRepositoryService ) = IsUrlReachableUseCaseImpl( { true },
+                                                                                            shortUrlEntityRepository)
+fun isUrlReachableUseCaseBadMock( shortUrlEntityRepository:
+                                  ShortUrlRepositoryService ) = IsUrlReachableUseCaseImpl( { false },
+                                                                                            shortUrlEntityRepository)
 
 
 // La parte de probar la conexion 3 veces hacerla una interfaz y que esta implementacion actual que sea una

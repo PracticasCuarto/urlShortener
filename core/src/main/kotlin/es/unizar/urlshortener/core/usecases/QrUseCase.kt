@@ -1,7 +1,7 @@
 @file:Suppress("WildcardImport","UnusedParameter","MagicNumber","MaxLineLength")
 package es.unizar.urlshortener.core.usecases
 
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.*
 import net.glxn.qrgen.core.image.ImageType
 import net.glxn.qrgen.javase.QRCode
 import java.io.ByteArrayOutputStream
@@ -10,7 +10,7 @@ import java.io.File
 const val QRCODEFOLDER: String = "../CodigosQr"
 
 interface QrUseCase {
-    fun generateQRCode(url: String, hash: String): ByteArray
+    fun generateQRCode(url: String, hash: String): Boolean
     fun getQrImageBytes(id: String): ByteArray?
     fun getCodeStatus(hash: String): Int
     fun getInfoForQr(id: String): QrInfo
@@ -55,7 +55,7 @@ class QrUseCaseImpl(
     // Mapa para rastrear el estado de los códigos QR
     private val qrCodeStatusMap: MutableMap<String, Boolean> = mutableMapOf()
 
-    override fun generateQRCode(url: String, hash: String): ByteArray {
+    override fun generateQRCode(url: String, hash: String): Boolean {
         val byteArrayOutputStream = ByteArrayOutputStream()
         QRCode.from(url).to(ImageType.PNG).writeTo(byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
@@ -70,12 +70,6 @@ class QrUseCaseImpl(
         shortUrlEntityRepository.updateHayQr(hash, 2)
 
 
-        //val p1 = getCodeStatus(hash)
-        //println("Valor antes durante el Qr: $p1")
-
-        // Sleep de 5 segundos para simular el tiempo de creación del código QR
-        //Thread.sleep(15000)
-
         // Guardar el código QR en el archivo
         File(outputPath).writeBytes(byteArray)
 
@@ -85,20 +79,19 @@ class QrUseCaseImpl(
         // AÑADIR EN LA BASE QUE QR ESTA CREADO (1)
         shortUrlEntityRepository.updateHayQr(hash, 1)
 
-        return byteArray
+        return true
     }
 
     override fun getQrImageBytes(id: String): ByteArray? {
 
         val qrImagePath = File(QRCODEFOLDER, "$id.png")
 
-        // COMPROBAR QUE ES ALCANZABLE
+        // Comprobar que existe el QR en la carpeta de QRs
         return if (qrImagePath.exists()) {
             qrImagePath.readBytes()
         } else {
-            // No existe en la base de datos, devolverá una respuesta de tipo 404
+            // No existe el QR
             null
-            // COMPROBAR TB LA RESPUESTA EN CASO DE QUE ESTE PENDIENTE
         }
     }
 
@@ -116,20 +109,21 @@ class QrUseCaseImpl(
     override fun getInfoForQr(id: String): QrInfo {
         val hayQr = shortUrlEntityRepository.obtainHayQr(id)
         val alcanzable = shortUrlEntityRepository.obtainAlcanzable(id)
+        val existeId = shortUrlEntityRepository.existe(id)
         return when {
-            // PARA QUE FUNCIONE DE MOMENTO ALCANZABLE A 0 PORQUE NADIE LO MODIFICA !!!!!!!!!!!!!!!!!!!!!!!!!
-            hayQr == 1 && alcanzable == 1 -> {
-                // La URL corta existe, es redireccionable y tiene un código QR
+            !existeId ->
+                throw InformationNotFound("El id introducido no existe")
+            hayQr == 2 || alcanzable == 2 ->
+                // La URL corta existe, pero el código QR está en proceso de creación o
+                // no sabemos si es alcanzable o no
+                throw CalculandoException("Qr o URL en proceso de creacion")
+
+            hayQr == 0 || alcanzable == 0->
+                throw InvalidExist( "No se puede redirigir a esta URL corta")
+
+            else -> {
                 val imageBytes = getQrImageBytes(id)
                 QrInfo(hayQr, alcanzable, imageBytes)
-            }
-            hayQr == 2 -> {
-                // La URL corta existe, pero el código QR está en proceso de creación
-                QrInfo(hayQr, alcanzable, null)
-            }
-            else -> {
-                // Otros casos como no redireccionable, no operativa, spam, etc.
-                QrInfo(hayQr, alcanzable, null)
             }
         }
     }
