@@ -86,13 +86,12 @@ class QrUseCaseImpl(
 
         val qrImagePath = File(QRCODEFOLDER, "$id.png")
 
-        // COMPROBAR QUE ES ALCANZABLE
+        // Comprobar que existe el QR en la carpeta de QRs
         return if (qrImagePath.exists()) {
             qrImagePath.readBytes()
         } else {
-            // No existe en la base de datos, devolverá una respuesta de tipo 404
+            // No existe el QR
             null
-            // COMPROBAR TB LA RESPUESTA EN CASO DE QUE ESTE PENDIENTE
         }
     }
 
@@ -114,15 +113,13 @@ class QrUseCaseImpl(
         return when {
             !existeId ->
                 throw InformationNotFound("El id introducido no existe")
-            hayQr == 2 || alcanzable == 2
-
-            ->
+            hayQr == 2 || alcanzable == 2 ->
                 // La URL corta existe, pero el código QR está en proceso de creación o
                 // no sabemos si es alcanzable o no
                 throw CalculandoException("Qr o URL en proceso de creacion")
 
             hayQr == 0 || alcanzable == 0->
-                throw InvalidExist( "No se puede redirigir a esta URL corta en este momento")
+                throw InvalidExist( "No se puede redirigir a esta URL corta")
 
             else -> {
                 val imageBytes = getQrImageBytes(id)

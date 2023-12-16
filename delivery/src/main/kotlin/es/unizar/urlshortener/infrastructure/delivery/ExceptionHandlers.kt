@@ -23,10 +23,14 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
 
 
     @ResponseBody
-    @ExceptionHandler(value = [InformationNotFound::class ,RedirectionNotFound::class])
+    @ExceptionHandler(value = [InformationNotFound::class])
     @ResponseStatus(HttpStatus.NOT_FOUND)
     fun informationNotFound(ex: InformationNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
 
+    @ResponseBody
+    @ExceptionHandler(value = [RedirectionNotFound::class])
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun redirectionNotFound(ex: RedirectionNotFound) = ErrorMessage(HttpStatus.NOT_FOUND.value(), ex.message)
 
     @ExceptionHandler(value = [CalculandoException::class])
     fun calculandoException(ex: CalculandoException) = ResponseEntity.status(HttpStatus.BAD_REQUEST)

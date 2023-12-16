@@ -63,6 +63,8 @@ interface UrlShortenerController {
     fun returnInfo(id: String): InfoHash
 
     fun returnSystemInfo(@PathVariable id: String): SystemInfo
+
+     fun updateSystemInfo(@PathVariable id: String)
 }
 
 /**
@@ -195,6 +197,7 @@ class UrlShortenerControllerImpl(
 
         if (hayQr == "on") {
             //qrUseCase.generateQRCode(url.toString(), result.hash)
+            println("He entrado para hacer el QR")
 
             //Enviamos mensaje por la cola 1 para que se genere el QR enviando como string el hash un espacio y la url
             msgUseCase.sendMsg("cola_1", "${result.hash} ${url.toString()}")
@@ -248,6 +251,11 @@ class UrlShortenerControllerImpl(
     @GetMapping("/api/stats/metrics/{id:(?!api|index).*}", produces = [MediaType.APPLICATION_JSON_VALUE])
     override fun returnSystemInfo(@PathVariable id: String):
             SystemInfo = returnSystemInfoUseCase.returnSystemInfo(id)
+
+    @PostMapping("/api/update/metrics")
+    override fun updateSystemInfo(@PathVariable id: String) {
+        returnSystemInfoUseCase.updateSystemInfo()
+    }
 
     private fun obtenerInformacionUsuario(
         userAgent: String,

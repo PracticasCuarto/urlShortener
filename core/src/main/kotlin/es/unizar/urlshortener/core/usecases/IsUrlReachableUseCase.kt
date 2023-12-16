@@ -93,6 +93,7 @@ class IsUrlReachableUseCaseImpl(
     override fun getInfoForReachable(id: String) {
         val alcanzable = getCodeStatus(id)
 
+
         // PARA QUE FUNCIONE DE MOMENTO ALCANZABLE A 0 PORQUE NADIE LO MODIFICA !!!!!!!!!!!!!!!!!!!!!!!!!
          if (alcanzable == 2){
              // La URL corta existe, pero el código QR está en proceso de creación o
@@ -101,7 +102,6 @@ class IsUrlReachableUseCaseImpl(
          }
         else if (alcanzable == 0){
             throw InvalidExist( "No se puede redirigir a esta URL")
-
         }
 
     }
