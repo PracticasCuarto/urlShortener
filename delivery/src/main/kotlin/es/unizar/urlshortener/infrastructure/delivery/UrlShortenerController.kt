@@ -3,8 +3,6 @@
     "UnusedParameter", "FunctionOnlyReturningConstant")
 package es.unizar.urlshortener.infrastructure.delivery
 
-import com.maxmind.geoip2.DatabaseReader
-import com.maxmind.geoip2.model.CityResponse
 import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.*
 import jakarta.servlet.http.HttpServletRequest
@@ -113,28 +111,20 @@ class UrlShortenerControllerImpl(
     val redirectLimitUseCase: RedirectLimitUseCase,
     var isUrlReachableUseCase: IsUrlReachableUseCase,
     val qrUseCase: QrUseCase,                        //añadimos el nuevo UseCase del Qr
+    val locationUseCase: LocationUseCase,
     val msgUseCase: MsgUseCase,
     val msgUseCaseReachable: MsgUseCaseReachable,
     val msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics
 
 ) : UrlShortenerController {
 
-    @Value("classpath:GeoLite2-City.mmdb")
-    // A File object pointing to your GeoIP2 or GeoLite2 database
-    private lateinit var database: Resource
-
-    private val reader: DatabaseReader by lazy {
-        DatabaseReader.Builder(database.file).build()
-    }
-
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
-        val propiedades = obtenerInformacionUsuario(userAgent, request)
+        val propiedades = locationUseCase.obtenerInformacionUsuario(userAgent, request.remoteAddr)
 
         // Casos de error alcanzabilidad
         isUrlReachableUseCase.getInfoForReachable(id)
-
 
         if (!redirectLimitUseCase.newRedirect(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
@@ -258,47 +248,6 @@ class UrlShortenerControllerImpl(
     override fun updateSystemInfoURL(@PathVariable id: String) {
         returnSystemInfoUseCase.updateSystemInfo()
     }
-
-    private fun obtenerInformacionUsuario(
-        userAgent: String,
-        request: HttpServletRequest
-    ): ClickProperties {
-        // Lógica para extraer el sistema operativo y el navegador del User-Agent
-        val uaParser = Parser()
-        val client = uaParser.parse(userAgent)
-
-        // Obtener información sobre el sistema operativo y el navegador
-        val operatingSystem = client.os.family
-        val browser = client.userAgent.family
-        val ip = request.remoteAddr
-        var cityName: String? = null
-        var countryIsoCode: String? = null
-
-        if (ip != "0:0:0:0:0:0:0:1" && ip != "127.0.0.1") {
-            // Obtener información de la ciudad basada en la dirección IP
-            val ipAddress = InetAddress.getByName(ip)
-            val cityResponse: CityResponse = reader.city(ipAddress)
-
-            // Extraer información específica de la ciudad (puedes ajustar según tus necesidades)
-            cityName = cityResponse.city.name
-            countryIsoCode = cityResponse.country.isoCode
-        }
-
-        // Mostrar toda la informacion del usuario que solicita la redireccion
-        println(
-            "Usuario solicita redireccion: SistemaOperativo[$operatingSystem], Navegador[$browser], " +
-                    "IP[$ip], Ciudad[$cityName], Pais[$countryIsoCode]"
-        )
-
-        val propiedades = ClickProperties(
-            ip = request.remoteAddr, os = operatingSystem,
-            browser = browser, country = countryIsoCode, city = cityName
-        )
-        return propiedades
-    }
-
-    //para los casos de error.
-    //data class ErrorResponse(val error: String, val message: String)
 
     @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
     fun returnQr(@PathVariable id: String, @RequestHeader(value = "User-Agent", required = false)

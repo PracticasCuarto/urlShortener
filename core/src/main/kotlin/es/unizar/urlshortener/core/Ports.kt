@@ -44,6 +44,8 @@ interface RabbitMQSenderService {
     fun sendThirdChannelMessage(message: String)
 
     fun sendMetricsChannelMessage(message: String)
+
+    fun sendLocationChannelMessage(message: String)
 }
 
 /**

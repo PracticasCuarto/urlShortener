@@ -17,8 +17,11 @@ interface ListenerMetrics {
 
 class ListenerMetricsImpl : ListenerMetrics {
 
-    private val httpClient = HttpClient {
-    }
+//    private val httpClient = HttpClient {
+//        install(JsonFeature)
+//
+//    }
+
 
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName4])
     override fun receiveMessage(message: String) {
@@ -28,18 +31,18 @@ class ListenerMetricsImpl : ListenerMetrics {
 
         val url = "http://localhost:8080/api/update/metrics"
 
-        runBlocking {
-            try {
-                val response = httpClient.post<String>(url) {
-                    contentType(ContentType.Application.Json)
-                    body = message
-                }
-
-                println("POST request successful. Response: $response")
-            } catch (e: Exception) {
-                println("POST request failed. Exception: $e")
-            }
-        }
+//        runBlocking {
+//            try {
+//                val response = httpClient.post<String>(url) {
+//                    contentType(ContentType.Application.Json)
+//                    body = message
+//                }
+//
+//                println("POST request successful. Response: $response")
+//            } catch (e: Exception) {
+//                println("POST request failed. Exception: $e")
+//            }
+//        }
 
 
 

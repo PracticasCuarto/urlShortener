@@ -28,6 +28,10 @@ class RabbitMQSenderImpl(
         sendMessage("Metrics", message)
     }
 
+    override fun sendLocationChannelMessage(message: String) {
+        sendMessage("Location", message)
+    }
+
     private fun sendMessage(channel: String, message: String) {
         println("Sending message to channel $channel...")
         rabbitTemplate.convertAndSend(
