@@ -11,7 +11,7 @@ interface ListenerMetrics {
 }
 
 
-class ListenerMetricsImpl () : ListenerMetrics {
+class ListenerMetricsImpl : ListenerMetrics {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName4])
     override fun receiveMessage(message: String) {
         println("Received message metrics")

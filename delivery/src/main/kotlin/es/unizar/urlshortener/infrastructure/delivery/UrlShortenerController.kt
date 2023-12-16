@@ -318,6 +318,8 @@ class UrlShortenerControllerImpl(
     override fun updateSystemInfoAutomatic() {
         // Escribir en cola de rabbit que se actualice
         msgUseCaseUpdateMetrics.sendMsg("cola_3", "update")
+
+        println("Actualizando sistema automaticamente...")
     }
 
 }
