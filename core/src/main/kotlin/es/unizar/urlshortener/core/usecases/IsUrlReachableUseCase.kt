@@ -68,14 +68,10 @@ class IsUrlReachableUseCaseImpl(
         return if (attempt == MAX_ATTEMPTS) {
             // Si se ha superado el número máximo de intentos, se devuelve false
             println("La url NO es alcanzable")
-            // escribimos un 0 en la bd para indicar que no es alcanzable
-            shortUrlEntityRepository.updateAlcanzable(hash, 0)
             false
         } else {
             // Si no se ha superado el número máximo de intentos, se devuelve true
             println("La url SI es alcanzable")
-            // escribimos un 1 en la bd para indicar que es alcanzable
-            shortUrlEntityRepository.updateAlcanzable(hash, 1)
             true
         }
     }
@@ -83,6 +79,7 @@ class IsUrlReachableUseCaseImpl(
     override fun setCodeStatus(hash: String, status: Int) {
         // escribimos en la base de datos el estado del calculo de la alcanzabilidad
         // 0 no existe, 1 creado y 2 creandose.
+        println("Me piden que guarde esto en la DB <$status>")
         shortUrlEntityRepository.updateAlcanzable(hash, status)
     }
 

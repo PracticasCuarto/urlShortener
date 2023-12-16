@@ -8,6 +8,7 @@ import es.unizar.urlshortener.infrastructure.delivery.HashServiceImpl
 import es.unizar.urlshortener.infrastructure.delivery.ValidatorServiceImpl
 import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerQrImpl
 import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerReachableImpl
+import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerWriteDBImpl
 import es.unizar.urlshortener.infrastructure.repositories.ClickEntityRepository
 import es.unizar.urlshortener.infrastructure.repositories.ClickRepositoryServiceImpl
 import es.unizar.urlshortener.infrastructure.repositories.ShortUrlEntityRepository
@@ -81,9 +82,16 @@ class ApplicationConfiguration(
     fun msgUseCaseReachable() = MsgUseCaseReachableImpl(rabbitMQSenderService())
 
     @Bean
+    fun msgUseCaseWriteDB() = MsgUseCaseWriteDBImpl(rabbitMQSenderService())
+
+    @Bean
     fun listenerQr() = ListenerQrImpl(qrUseCase())
 
     @Bean
-    fun listenerReachable() = ListenerReachableImpl(isUrlReachableUseCase(shortUrlRepositoryService()))
+    fun listenerReachable() = ListenerReachableImpl(isUrlReachableUseCase(shortUrlRepositoryService()),
+        msgUseCaseWriteDB())
+
+    @Bean
+    fun listenerWriteDB() = ListenerWriteDBImpl(isUrlReachableUseCase(shortUrlRepositoryService()))
 
 }

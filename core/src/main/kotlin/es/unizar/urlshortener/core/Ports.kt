@@ -40,6 +40,8 @@ interface RabbitMQSenderService {
     fun sendFirstChannelMessage(message: String)
 
     fun sendSecondChannelMessage(message: String)
+
+    fun sendThirdChannelMessage(message: String)
 }
 
 /**
