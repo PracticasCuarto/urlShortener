@@ -9,9 +9,9 @@ interface MsgUseCaseUpdateMetrics {
 class MsgUseCaseUpdateMetricsImpl(
     private val rabbitMQSender: RabbitMQSenderService
 
-) : MsgUseCase {
+) : MsgUseCaseUpdateMetrics {
     override fun sendMsg(canal: String, msj: String) {
         println("Sending message to channel $canal...")
-        rabbitMQSender.sendThirdChannelMessage(msj)
+        rabbitMQSender.sendMetricsChannelMessage(msj)
     }
 }

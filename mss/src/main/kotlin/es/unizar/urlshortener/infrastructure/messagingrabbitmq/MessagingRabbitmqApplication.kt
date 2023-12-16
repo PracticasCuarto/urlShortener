@@ -139,7 +139,7 @@ class MessagingRabbitmqApplication {
     }
 
     @Bean
-    fun listenerAdapter4(receiver4: ListenerReachableImpl?): MessageListenerAdapter {
+    fun listenerAdapter4(receiver4: ListenerMetricsImpl?): MessageListenerAdapter {
         return MessageListenerAdapter(receiver4, "receiveMessage")
     }
 
