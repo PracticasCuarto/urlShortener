@@ -1,8 +1,8 @@
 package es.unizar.urlshortener.infrastructure.messagingrabbitmq
 
+import es.unizar.urlshortener.core.RabbitMQSenderService
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import es.unizar.urlshortener.core.usecases.IsUrlReachableUseCase
-import es.unizar.urlshortener.core.usecases.MsgUseCaseWriteDBImpl
 
 interface ListenerReachable {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
@@ -12,7 +12,7 @@ interface ListenerReachable {
 
 class ListenerReachableImpl(
     val isUrlReachable: IsUrlReachableUseCase,
-    val msgUseCaseWriteDB: MsgUseCaseWriteDBImpl
+    val rabbitMQSender: RabbitMQSenderService
 ) : ListenerReachable {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     override fun receiveMessage(message: String) {
@@ -28,7 +28,7 @@ class ListenerReachableImpl(
         val state = isUrlReachable.isUrlReachable(url, hash)
         val stateInt = if (state) 1 else 0
         // escribir en la cola para que escriba en la DB
-        msgUseCaseWriteDB.sendMsg(MessagingRabbitmqApplication.queueName3, "$hash $stateInt")
+        rabbitMQSender.sendThirdChannelMessage("$hash $stateInt")
     }
 
 

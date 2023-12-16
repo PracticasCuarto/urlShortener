@@ -79,9 +79,6 @@ class ApplicationConfiguration(
     fun msgUseCase() = MsgUseCaseImpl(rabbitMQSenderService())
 
     @Bean
-    fun msgUseCaseWriteDB() = MsgUseCaseWriteDBImpl(rabbitMQSenderService())
-
-    @Bean
     fun msgUseCaseUpdateMetrics() = MsgUseCaseUpdateMetricsImpl(rabbitMQSenderService())
 
     @Bean
@@ -92,7 +89,7 @@ class ApplicationConfiguration(
 
     @Bean
     fun listenerReachable() = ListenerReachableImpl(isUrlReachableUseCase(shortUrlRepositoryService()),
-        msgUseCaseWriteDB())
+        rabbitMQSenderService())
 
     @Bean
     fun listenerWriteDB() = ListenerWriteDBImpl(isUrlReachableUseCase(shortUrlRepositoryService()))
