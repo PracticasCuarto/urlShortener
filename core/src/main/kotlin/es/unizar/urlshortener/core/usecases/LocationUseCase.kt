@@ -29,11 +29,7 @@ interface LocationUseCase {
     fun obtenerInformacionUsuario(userAgent: String, ip: String): ClickProperties
 }
 
-class LocationUseCaseImpl(
-    private val clickRepository: ClickRepositoryService,
-    private val shortUrlRepository: ShortUrlRepositoryService,
-    private val redirectLimitUseCaseImpl : RedirectLimitUseCase
-) : LocationUseCase {
+class LocationUseCaseImpl: LocationUseCase {
 
     @Value("classpath:GeoLite2-City.mmdb")
     // A File object pointing to your GeoIP2 or GeoLite2 database
