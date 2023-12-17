@@ -113,7 +113,6 @@ class UrlShortenerControllerImpl(
     val qrUseCase: QrUseCase,                        //añadimos el nuevo UseCase del Qr
     val locationUseCase: LocationUseCase,
     val msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics,
-    val msgUseCaseLocation: MsgUseCaseLocation,
     val rabbitSender: RabbitMQSenderService
 
 ) : UrlShortenerController {
@@ -122,7 +121,7 @@ class UrlShortenerControllerImpl(
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
          val propiedades = locationUseCase.obtenerInformacionUsuario(userAgent, request.remoteAddr)
-        msgUseCaseLocation.sendMsg("cola_3", userAgent + "||||||" + request.remoteAddr)
+        rabbitSender.sendLocationChannelMessage(userAgent + "||||||" + request.remoteAddr)
 
         // Casos de error alcanzabilidad
         isUrlReachableUseCase.getInfoForReachable(id)

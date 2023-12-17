@@ -68,9 +68,6 @@ class UrlShortenerControllerTest {
     @MockBean
     private lateinit var msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics
 
-    @MockBean
-    private lateinit var msgUseCaseLocation: MsgUseCaseLocation
-
 
     @Test
     fun `redirectTo returns a not found when the key does not exist`() {
