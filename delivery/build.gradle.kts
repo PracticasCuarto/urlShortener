@@ -33,4 +33,5 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:${Version.MOCKITO}")
+    testImplementation(project(mapOf("path" to ":mss")))
 }

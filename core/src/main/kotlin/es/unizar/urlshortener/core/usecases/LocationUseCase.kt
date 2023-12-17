@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.Resource
 import java.net.InetAddress
 import ua_parser.Parser
+import es.unizar.urlshortener.core.usecases.LogClickUseCase
 
 /**
  * Use case interface for returning information about users who have clicked a shortened link.
@@ -26,10 +27,12 @@ interface LocationUseCase {
      * @return A list of [Info] objects representing user click information.
      * @throws InformationNotFound if no information is found for the given key.
      */
-    fun obtenerInformacionUsuario(userAgent: String, ip: String): ClickProperties
+    fun obtenerInformacionUsuario(userAgent: String, ip: String, id: String): ClickProperties
 }
 
-class LocationUseCaseImpl: LocationUseCase {
+class LocationUseCaseImpl (
+    val logClickUseCase: LogClickUseCase
+): LocationUseCase {
 
     @Value("classpath:GeoLite2-City.mmdb")
     // A File object pointing to your GeoIP2 or GeoLite2 database
@@ -48,7 +51,8 @@ class LocationUseCaseImpl: LocationUseCase {
      */
     override fun obtenerInformacionUsuario(
         userAgent: String,
-        ip: String
+        ip: String,
+        id: String
     ): ClickProperties {
         // Lógica para extraer el sistema operativo y el navegador del User-Agent
         val uaParser = Parser()
@@ -80,6 +84,8 @@ class LocationUseCaseImpl: LocationUseCase {
             ip = ip, os = operatingSystem,
             browser = browser, country = countryIsoCode, city = cityName
         )
+
+        logClickUseCase.logClick(id, propiedades)
         return propiedades
     }
 }

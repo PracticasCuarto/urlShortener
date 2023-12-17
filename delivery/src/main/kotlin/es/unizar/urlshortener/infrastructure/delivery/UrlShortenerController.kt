@@ -120,8 +120,8 @@ class UrlShortenerControllerImpl(
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
-         val propiedades = locationUseCase.obtenerInformacionUsuario(userAgent, request.remoteAddr)
-        rabbitSender.sendLocationChannelMessage(userAgent + "||||||" + request.remoteAddr)
+        // val propiedades = locationUseCase.obtenerInformacionUsuario(userAgent, request.remoteAddr)
+        rabbitSender.sendLocationChannelMessage(id + "||||||" + userAgent + "||||||" + request.remoteAddr)
 
         // Casos de error alcanzabilidad
         isUrlReachableUseCase.getInfoForReachable(id)
@@ -129,7 +129,7 @@ class UrlShortenerControllerImpl(
         if (!redirectLimitUseCase.newRedirect(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
         redirectUseCase.redirectTo(id).let {
-            logClickUseCase.logClick(id, propiedades)
+//            logClickUseCase.logClick(id, propiedades)
             val h = HttpHeaders()
             h.location = URI.create(it.target)
             return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
