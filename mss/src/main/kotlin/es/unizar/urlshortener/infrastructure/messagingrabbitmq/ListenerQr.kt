@@ -14,7 +14,6 @@ class ListenerQrImpl (
 ) : ListenerQr {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName])
     override fun receiveMessage(message: String) {
-        println("Received HEMOS CONSEGIUDO ENTRAR EN EL METODO LISTENER")
 
         // troceamos la entrada teniendo en cuenta el primer espacio para separar hash de url
         val hash = message.substringBefore(" ")

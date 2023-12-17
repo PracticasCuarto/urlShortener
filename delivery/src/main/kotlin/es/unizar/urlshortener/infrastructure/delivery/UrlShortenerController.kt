@@ -132,7 +132,6 @@ class UrlShortenerControllerImpl(
         }
     }
 
-    // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
     @PostMapping("/api/update/metrics")
     override fun updateSystemInfoURL() {
         println("Actualizando sistema en el endpoint.sahgbjvnudbfhmrgbhjfbv jhjcb jhdmfbdjhbh..")
@@ -185,23 +184,13 @@ class UrlShortenerControllerImpl(
                 "safe" to result.properties.safe
             )
         )
-
-        // A partir de aqui es el QR.
-        //Comprobamos el valor de hayQr en la base de datos.
-        println("Valor del hayQr antes: ${qrUseCase.getCodeStatus(result.hash)}")
-
         if (hayQr == "on") {
-            //qrUseCase.generateQRCode(url.toString(), result.hash)
-            println("He entrado para hacer el QR")
-
-            //Enviamos mensaje por la cola 1 para que se genere el QR enviando como string el hash un espacio y la url
+            //Enviamos mensaje por la cola 1 para que se genere el QR
+            // enviando como string el hash un espacio y la url
             rabbitSender.qrChannelMessage("${result.hash} ${url.toString()}")
         }
 
-        //Comprobamos el valor de hayQr en la base de datos.
-        println("Valor del hayQr despues: ${qrUseCase.getCodeStatus(result.hash)}")
 
-        // ALCANZABILIDAD ------------------------------------------------
         // indicamos en la db que todavia lo estamos calculando
         println("calculando alcanzabilidad...")
         isUrlReachableUseCase.setCodeStatus(result.hash, 2)

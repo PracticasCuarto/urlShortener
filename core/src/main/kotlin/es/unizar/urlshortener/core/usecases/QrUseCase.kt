@@ -1,7 +1,10 @@
-@file:Suppress("WildcardImport","UnusedParameter","MagicNumber","MaxLineLength")
 package es.unizar.urlshortener.core.usecases
 
-import es.unizar.urlshortener.core.*
+
+import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.InformationNotFound
+import es.unizar.urlshortener.core.CalculandoException
+import es.unizar.urlshortener.core.InvalidExist
 import net.glxn.qrgen.core.image.ImageType
 import net.glxn.qrgen.javase.QRCode
 import java.io.ByteArrayOutputStream
@@ -69,14 +72,13 @@ class QrUseCaseImpl(
         // AÑADIR EN LA BASE QUE QR ESTA EN PROCESO (2)
         shortUrlEntityRepository.updateHayQr(hash, 2)
 
-
         // Guardar el código QR en el archivo
         File(outputPath).writeBytes(byteArray)
 
         // Marcar el código QR como "creado"
         qrCodeStatusMap[hash] = false
 
-        // AÑADIR EN LA BASE QUE QR ESTA CREADO (1)
+        // Añadir en la base de datos QR creado (1)
         shortUrlEntityRepository.updateHayQr(hash, 1)
 
         return true
@@ -95,7 +97,8 @@ class QrUseCaseImpl(
         }
     }
 
-    // Función la cual devuelve el estado en el que se encuentra el qr. 0 no existe, 1 creado y 2 creandose.
+    // Función la cual devuelve el estado en el que se encuentra el qr.
+    // 0 no existe, 1 creado y 2 creandose.
     override fun getCodeStatus(hash: String): Int {
         println("Valores actuales del mapa al entrar a getCodeStatus:")
         qrCodeStatusMap.forEach { (key, value) ->
@@ -119,9 +122,11 @@ class QrUseCaseImpl(
                 throw CalculandoException("Qr o URL en proceso de creacion")
 
             hayQr == 0 || alcanzable == 0->
+                // QR o URL no son alcanzable o no se puede generar
                 throw InvalidExist( "No se puede redirigir a esta URL corta")
 
             else -> {
+                // Caso correcto devolviendo la imagen, hayQR y alcanzable
                 val imageBytes = getQrImageBytes(id)
                 QrInfo(hayQr, alcanzable, imageBytes)
             }

@@ -20,7 +20,6 @@ class ListenerMetricsImpl : ListenerMetrics {
         try {
             // URL a la que se enviará la solicitud POST
             val url = URL("http://localhost:8080/api/update/metrics")
-            //val url = URL("http://localhost:8080/api/link")
 
             // Abrir conexión
             val connection = url.openConnection() as HttpURLConnection
