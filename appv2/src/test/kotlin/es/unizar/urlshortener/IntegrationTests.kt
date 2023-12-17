@@ -52,6 +52,7 @@ class HttpRequestTest {
 
     @BeforeEach
     fun setup() {
+        sleep(3000)
         val httpClient = HttpClientBuilder.create()
             .disableRedirectHandling()
             .build()
