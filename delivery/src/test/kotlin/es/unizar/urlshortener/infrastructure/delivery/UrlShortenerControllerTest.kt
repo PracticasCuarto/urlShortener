@@ -102,7 +102,6 @@ class UrlShortenerControllerTest {
         ).andDo(print())
             .andExpect(status().isCreated)
 
-        //verify(msgUseCaseReachable).sendMsg("cola_2", "f684a3c4 http://example.com/")
         verify(rabbitMQSender).reachableChannelMessage("f684a3c4 http://example.com/")
 
     }
@@ -134,8 +133,9 @@ class UrlShortenerControllerTest {
             .andExpect(jsonPath("$.statusCode").value(400))
     }
 
+    // si se ha terminado de comprobar la alcanzabilidad y es alcanzable, se redirige
     @Test
-    fun `isUrlReachable returns a ok if the url is reachable`() {
+    fun `isUrlReachable returns a temporary redirect if the url is reachable`() {
         given(redirectUseCase.redirectTo("f684a3c4")).willReturn(Redirection("http://example.com/"))
         given(redirectLimitUseCase.newRedirect("f684a3c4")).willReturn(true)
 

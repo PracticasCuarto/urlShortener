@@ -37,9 +37,6 @@ class IsUrlReachableUseCaseImpl(
     val connect: (it: String) -> Boolean = {
     val url = URL(it)
     val connection = url.openConnection() as HttpURLConnection
-    // connection.requestMethod = "GET"
-    //connection.connectTimeout = 5000 // Tiempo de espera en milisegundos
-
         connection.responseCode == HttpURLConnection.HTTP_OK
 
 },
@@ -90,14 +87,12 @@ class IsUrlReachableUseCaseImpl(
     override fun getInfoForReachable(id: String) {
         val alcanzable = getCodeStatus(id)
 
-
-        // PARA QUE FUNCIONE DE MOMENTO ALCANZABLE A 0 PORQUE NADIE LO MODIFICA !!!!!!!!!!!!!!!!!!!!!!!!!
          if (alcanzable == 2){
-             // La URL corta existe, pero el código QR está en proceso de creación o
-             // no sabemos si es alcanzable o no
+             // La URL corta existe, pero no sabemos todavia si es alcanzable o no
              throw CalculandoException("Alcanzabilidad en proceso de creacion")
          }
         else if (alcanzable == 0){
+            // La URL corta no es alcanzable
             throw InvalidExist( "No se puede redirigir a esta URL")
         }
 

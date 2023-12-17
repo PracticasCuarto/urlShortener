@@ -24,10 +24,11 @@ class ListenerReachableImpl(
         println("Received <$hash>")
         println("Received <$url>")
 
-        // Generamos el código QR
+        // comprobamos si la url es alcanzable, en ese caso 1, en caso contrario 0
+        // hay que traducir el true o false que se devuelve a 1 o 0
         val state = isUrlReachable.isUrlReachable(url, hash)
         val stateInt = if (state) 1 else 0
-        // escribir en la cola para que escriba en la DB
+        // escribir en la cola para que escriba en la base de datos
         rabbitMQSender.writeDBChannelMessage("$hash $stateInt")
     }
 

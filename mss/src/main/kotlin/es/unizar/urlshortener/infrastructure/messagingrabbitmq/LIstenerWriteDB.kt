@@ -16,7 +16,7 @@ class ListenerWriteDBImpl (
     override fun receiveMessage(message: String) {
         println("Received message queque WriteDB")
 
-        // troceamos la entrada teniendo en cuenta el primer espacio para separar hash de url
+        // troceamos la entrada teniendo en cuenta el primer espacio para separar hash del estado
         val hash = message.substringBefore(" ")
         val state = message.substringAfter(" ")
         println("Received <$hash>")
