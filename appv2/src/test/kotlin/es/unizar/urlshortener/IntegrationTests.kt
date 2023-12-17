@@ -78,10 +78,14 @@ class HttpRequestTest {
 
         val target = shortUrl("http://example.com/").headers.location
         require(target != null)
+
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
+
         val response = restTemplate.getForEntity(target, String::class.java)
 
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(5000)
+        sleep(2000)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
@@ -94,6 +98,8 @@ class HttpRequestTest {
     fun `shortener limits the amount of redirections in the database`() {
         val target = shortUrl("http://example.com/", "3").headers.location
         require(target != null)
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
         val response = restTemplate.getForEntity(target, String::class.java)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
@@ -109,6 +115,8 @@ class HttpRequestTest {
     fun `redirectTo processes user agent`() {
         val target = shortUrl("http://example.com/").headers.location
         require(target != null)
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -116,6 +124,8 @@ class HttpRequestTest {
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
 
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "browser = 'Chrome'")).isEqualTo(1)
@@ -127,11 +137,16 @@ class HttpRequestTest {
     fun `redirectTo doesnt process invalid user agent`() {
         val target = shortUrl("http://example.com/").headers.location
         require(target != null)
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
         val headers = HttpHeaders()
         headers["User-agent"] = "asdnklajsd"
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
 
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "browser = 'Other'")).isEqualTo(1)
@@ -166,6 +181,9 @@ class HttpRequestTest {
         headers["X-Forwarded-For"] = specifiedIp
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
+
         // Imprime el contenido de la tabla "click" de la base de datos
         val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
         println("Contenido de la tabla 'click': $clickTableContent")
@@ -193,6 +211,9 @@ class HttpRequestTest {
                 "Chrome/119.0.0.0 Safari/537.36"
         headers["X-Forwarded-For"] = specifiedIp
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
 
         // Imprime el contenido de la tabla "click" de la base de datos
         val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
@@ -366,6 +387,8 @@ class HttpRequestTest {
     fun `redirectTo redirects when limit is 0`() {
         val target = shortUrl("http://example.com/", "0").headers.location
         require(target != null)
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -389,6 +412,8 @@ class HttpRequestTest {
 
         val target = shortUrl("http://example.com/", "3").headers.location
         require(target != null)
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -404,8 +429,16 @@ class HttpRequestTest {
 
     @Test
     fun `redirectTo limits the number of redirects to 3`() {
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
+
+        // Configure the controller to use the reachableMock
+        urlShortenerController.isUrlReachableUseCase = reachableMock
+
         val target = shortUrl("http://example45.com/", "3").headers.location
         require(target != null)
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -431,7 +464,18 @@ class HttpRequestTest {
 
     @Test
     fun `returnInfo returns the limit correctly`() {
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
+
+        // Configure the controller to use the reachableMock
+        urlShortenerController.isUrlReachableUseCase = reachableMock
+
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(3000)
+
         val target = shortUrl("http://example1.com/", "3").headers.location
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(3000)
         require(target != null)
 
         val response = restTemplate.getForEntity(target, String::class.java)
@@ -447,6 +491,8 @@ class HttpRequestTest {
     @Test
     fun `returnInfo returns the amount of pending redirections correctly`() {
         val target = shortUrl("https://youtube.com/", "3").headers.location
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(3000)
         require(target != null)
 
         // Repetir 3 veces y comprobar que el numRedirecciones va aumentando

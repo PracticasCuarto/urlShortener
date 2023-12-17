@@ -88,6 +88,7 @@ class IsUrlReachableUseCaseImpl(
         val alcanzable = getCodeStatus(id)
 
          if (alcanzable == 2){
+             println("FOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOK")
              // La URL corta existe, pero no sabemos todavia si es alcanzable o no
              throw CalculandoException("Alcanzabilidad en proceso de creacion")
          }
