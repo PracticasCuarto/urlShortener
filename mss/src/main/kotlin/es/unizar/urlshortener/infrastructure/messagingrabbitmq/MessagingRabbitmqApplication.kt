@@ -1,4 +1,4 @@
-@file:Suppress("SpreadOperator", "TooManyFunctions", )
+@file:Suppress( "TooManyFunctions", )
 
 package es.unizar.urlshortener.infrastructure.messagingrabbitmq
 
@@ -179,10 +179,11 @@ class MessagingRabbitmqApplication {
         const val queueName3 = "cola_3"
         const val queueName4 = "cola_4"
         const val queueName5 = "cola_5"
-        @Throws(InterruptedException::class)
+        /*@Throws(InterruptedException::class)
         @JvmStatic
         fun main(args: Array<String>) {
-            SpringApplication.run(MessagingRabbitmqApplication::class.java, *args).close()
-        }
+            SpringApplication.run(MessagingRabbitmqApplication::class.java, *args)
+                .close()
+        }*/
     }
 }

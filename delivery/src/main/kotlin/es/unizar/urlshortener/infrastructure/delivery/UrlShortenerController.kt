@@ -206,7 +206,6 @@ class UrlShortenerControllerImpl(
         isUrlReachableUseCase.setCodeStatus(result.hash, 2)
         println("calculando alcanzabilidad...")
         println("Valor del alcanzable: ${isUrlReachableUseCase.getCodeStatus(result.hash)}")
-        //msgUseCaseReachable.sendMsg("cola_2", "${result.hash} ${data.url}")
         rabbitSender.reachableChannelMessage("${result.hash} ${data.url}")
         // ---------------------------------------------------------------
 
