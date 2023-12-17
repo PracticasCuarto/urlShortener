@@ -63,6 +63,7 @@ class HttpRequestTest {
     @AfterEach
     fun tearDowns() {
         JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click")
+        sleep(3000)
     }
 
     @Test
@@ -80,18 +81,18 @@ class HttpRequestTest {
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
 
-        val target = shortUrl("http://example10.com/", "100").headers.location
+        val target = shortUrl("http://example19.com/", "3").headers.location
+        sleep(8000)
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
         val response = restTemplate.getForEntity(target, String::class.java)
-        sleep(2000)
+        sleep(8000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-        assertThat(response.headers.location).isEqualTo(URI.create("http://example10.com/"))
+        assertThat(response.headers.location).isEqualTo(URI.create("http://example19.com/"))
         
-        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "shorturl","limit = '100'" )).isEqualTo(1)
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "shorturl","limit = '3'" )).isEqualTo(1)
     }
 
     @Test
@@ -122,19 +123,27 @@ class HttpRequestTest {
 
     @Test
     fun `redirectTo processes user agent`() {
-        val target = shortUrl("http://example.com/").headers.location
-        require(target != null)
+
+        // forzamos a que la url sea alcanzable
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
+
+        // Configure the controller to use the reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
+
+        val target = shortUrl("http://example18.com/").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(8000)
+        require(target != null)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
-        assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-        assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(8000)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+        assertThat(response.headers.location).isEqualTo(URI.create("http://example18.com/"))
 
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "browser = 'Chrome'")).isEqualTo(1)
@@ -150,19 +159,19 @@ class HttpRequestTest {
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
 
-        val target = shortUrl("http://example11.com/").headers.location
+        val target = shortUrl("http://example17.com/").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(8000)
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
         val headers = HttpHeaders()
         headers["User-agent"] = "asdnklajsd"
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
-        sleep(3000)
+        sleep(8000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-        assertThat(response.headers.location).isEqualTo(URI.create("http://example11.com/"))
+        assertThat(response.headers.location).isEqualTo(URI.create("http://example17.com/"))
 
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "browser = 'Other'")).isEqualTo(1)
@@ -187,11 +196,12 @@ class HttpRequestTest {
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
 
         // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada,Barcelona
         val specifiedIp = "188.77.145.43"
         val target = shortUrl("http://example.com/").headers.location
+        sleep(8000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -200,7 +210,7 @@ class HttpRequestTest {
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(8000)
 
         // Imprime el contenido de la tabla "click" de la base de datos
         val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
@@ -218,7 +228,7 @@ class HttpRequestTest {
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
 
         // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada, Barcelona
         val specifiedIp = "188.77.145.43"
@@ -310,7 +320,7 @@ class HttpRequestTest {
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
 
         // Perform the shortening operation
         val response = shortUrl("http://example.com/")
@@ -327,7 +337,7 @@ class HttpRequestTest {
         val notReachableMock = isUrlReachableUseCaseBadMock(shortUrlRepositoryService)
 
         // Configure the controller to use the notReachableMock
-        urlShortenerController.isUrlReachableUseCase = notReachableMock
+        listenerReachableImpl.isUrlReachable = notReachableMock
 
         // Perform the shortening operation
         val response = shortUrl("http://example.com/")
@@ -345,9 +355,9 @@ class HttpRequestTest {
         // URL reachable mock
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
         // Configuramos el controlador para usar el reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
         // Realizamos la operación de acortamiento
-        val response = shortUrl("http://example.com/")
+        val response = shortUrl("http://example13.com/")
 
         // Hacer la redirección
         restTemplate.getForEntity(response.headers.location, String::class.java)
@@ -374,33 +384,35 @@ class HttpRequestTest {
 
     // Test que compruebe que cuando se hacen 5 redirecciones a una URL, se sume 5 a la métrica de totalRedirecciones
     // pero no se sume a la metrica de totalRedireccionesHash porque no se solicita a la misma URL
-    @Test
+    @Test // TODO: Revisar
     fun `redirectTo increments totalRedirecciones and totalRedireccionesHash metrics when 3 redirections are made`() {
         // Forzamos a que la URL sea alcanzable
         // URL reachable mock
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
         // Configuramos el controlador para usar el reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
         // Realizamos la operación de acortamiento
-        var response = shortUrl("http://example.com/")
+        var response = shortUrl("http://example13.com/")
+        Thread.sleep(8000)
 
         // Hacer 3 redirecciones
         repeat(3) {
             restTemplate.getForEntity(response.headers.location, String::class.java)
             // Esperar 6000
-            Thread.sleep(2000)
+            Thread.sleep(8000)
         }
 
         response = shortUrl("https://youtube.com")
+        Thread.sleep(8000)
         restTemplate.getForEntity(response.headers.location, String::class.java)
         // Esperar 7000
-        Thread.sleep(3000)
+        Thread.sleep(5000)
 
         // Hacer una llamada para actualizar las metricas
         val statsEndpoint = "http://localhost:$port/api/update/metrics"
         restTemplate.postForEntity(statsEndpoint, null, String::class.java)
 
-        Thread.sleep(3000)
+        Thread.sleep(5000)
 
         // Obtener el valor actualizado de la métrica totalRedirecciones después de la redirección
         val updatedRedirectionCount = getTotalRedireccionesMetric()
@@ -417,10 +429,17 @@ class HttpRequestTest {
 
     @Test
     fun `redirectTo redirects when limit is 0`() {
-        val target = shortUrl("http://example.com/", "0").headers.location
+
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
+
+        // Configure the controller to use the reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
+
+        val target = shortUrl("http://example15.com/", "0").headers.location
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(8000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -429,8 +448,9 @@ class HttpRequestTest {
         // Probar por ejemplo 3 veces a solicitar
         repeat(3) {
             val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+            sleep(8000)
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-            assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+            assertThat(response.headers.location).isEqualTo(URI.create("http://example15.com/"))
         }
     }
 
@@ -440,7 +460,7 @@ class HttpRequestTest {
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
 
         val target = shortUrl("http://example.com/", "3").headers.location
         require(target != null)
@@ -465,7 +485,7 @@ class HttpRequestTest {
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
 
         val target = shortUrl("https://www.unizar.es/", "3").headers.location
         require(target != null)
@@ -509,7 +529,7 @@ class HttpRequestTest {
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
 
         val target = shortUrl("https://moodle.unizar.es/add/my/", "3").headers.location
         sleep(5000)
@@ -533,7 +553,14 @@ class HttpRequestTest {
 
     @Test
     fun `returnInfo returns the amount of pending redirections correctly`() {
-        val target = shortUrl("https://youtube.com/", "3").headers.location
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
+
+        // Configure the controller to use the reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
+
+
+        val target = shortUrl("https://example14.com/", "3").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
         sleep(10000)
         require(target != null)
@@ -543,9 +570,9 @@ class HttpRequestTest {
             val response = restTemplate.getForEntity(target, String::class.java)
             sleep(3000)
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-            assertThat(response.headers.location).isEqualTo(URI.create("https://youtube.com/"))
+            assertThat(response.headers.location).isEqualTo(URI.create("https://example14.com/"))
 
-            val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/281d5122", String::class.java)
+            val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/a42a5856", String::class.java)
             sleep(3000)
             println("infoResponse: ${infoResponse.body}")
             assertThat(infoResponse.statusCode).isEqualTo(HttpStatus.OK)
@@ -555,7 +582,7 @@ class HttpRequestTest {
 
     private fun getTotalRedireccionesMetric(): Int {
         // Obtener el valor de la métrica totalRedirecciones desde el endpoint JSON
-        val statsEndpoint = "http://localhost:$port/api/stats/metrics/f684a3c4"
+        val statsEndpoint = "http://localhost:$port/api/stats/metrics/051132dd"
         val metricResponse = restTemplate.getForEntity(statsEndpoint, String::class.java)
         // Parsear el JSON para obtener el valor de la métrica totalRedirecciones
         return ObjectMapper().readTree(metricResponse.body).get("totalRedirecciones").asInt()
@@ -563,7 +590,7 @@ class HttpRequestTest {
 
     private fun getTotalRedireccionesHashMetric(): Int {
         // Obtener el valor de la métrica totalRedireccionesHash desde el endpoint JSON
-        val statsEndpoint = "http://localhost:$port/api/stats/metrics/f684a3c4"
+        val statsEndpoint = "http://localhost:$port/api/stats/metrics/051132dd"
         val metricResponse = restTemplate.getForEntity(statsEndpoint, String::class.java)
         // Parsear el JSON para obtener el valor de la métrica totalRedireccionesHash
         return ObjectMapper().readTree(metricResponse.body).get("totalRedireccionesHash").asInt()
