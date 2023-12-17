@@ -11,7 +11,7 @@ interface ListenerReachable {
 
 
 class ListenerReachableImpl(
-    val isUrlReachable: IsUrlReachableUseCase,
+    var isUrlReachable: IsUrlReachableUseCase,
     val rabbitMQSender: RabbitMQSenderService
 ) : ListenerReachable {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
