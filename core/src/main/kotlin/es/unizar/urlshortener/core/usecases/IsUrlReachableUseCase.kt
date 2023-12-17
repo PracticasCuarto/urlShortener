@@ -1,9 +1,6 @@
 package es.unizar.urlshortener.core.usecases
 
-import es.unizar.urlshortener.core.CalculandoException
-import es.unizar.urlshortener.core.InvalidExist
-import es.unizar.urlshortener.core.ShortUrl
-import es.unizar.urlshortener.core.ShortUrlRepositoryService
+import es.unizar.urlshortener.core.*
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -25,6 +22,8 @@ interface IsUrlReachableUseCase {
     fun setCodeStatus(hash: String, status: Int)
 
     fun getCodeStatus(hash: String) : Int
+
+    fun existsID(id: String): Boolean
 
     fun  getInfoForReachable(id: String)
 
@@ -84,7 +83,15 @@ class IsUrlReachableUseCaseImpl(
         return shortUrlEntityRepository.obtainAlcanzable(hash)
     }
 
+    override fun existsID(id: String): Boolean {
+        return shortUrlEntityRepository.existe(id)
+    }
+
     override fun getInfoForReachable(id: String) {
+        if (!existsID(id)) {
+            throw RedirectionNotFound("El ID no existe en la base de datos")
+        }
+
         val alcanzable = getCodeStatus(id)
 
          if (alcanzable == 2){
@@ -93,6 +100,7 @@ class IsUrlReachableUseCaseImpl(
              throw CalculandoException("Alcanzabilidad en proceso de creacion")
          }
         else if (alcanzable == 0){
+             println("WHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT")
             // La URL corta no es alcanzable
             throw InvalidExist( "No se puede redirigir a esta URL")
         }

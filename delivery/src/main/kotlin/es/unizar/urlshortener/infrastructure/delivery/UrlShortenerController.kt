@@ -123,7 +123,7 @@ class UrlShortenerControllerImpl(
         if (!redirectLimitUseCase.newRedirect(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
         redirectUseCase.redirectTo(id).let {
-           // logClickUseCase.logClick(id, propiedades)
+            // logClickUseCase.logClick(id, propiedades)
             val h = HttpHeaders()
             h.location = URI.create(it.target)
             if (HttpStatus.valueOf(it.mode) != HttpStatus.NOT_FOUND) {

@@ -26,6 +26,7 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import java.lang.Thread.sleep
 import java.net.URI
+import kotlin.concurrent.thread
 
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -457,6 +458,8 @@ class HttpRequestTest {
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
 
+        sleep(3000)
+
         // Probar por ejemplo 3 veces a solicitar
         repeat(3) {
             val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
@@ -514,7 +517,7 @@ class HttpRequestTest {
     fun `returnInfo returns the amount of pending redirections correctly`() {
         val target = shortUrl("https://youtube.com/", "3").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(3000)
+        sleep(10000)
         require(target != null)
 
         // Repetir 3 veces y comprobar que el numRedirecciones va aumentando
