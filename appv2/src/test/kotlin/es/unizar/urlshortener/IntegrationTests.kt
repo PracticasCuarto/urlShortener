@@ -100,12 +100,10 @@ class HttpRequestTest {
         // Dormir un poco para dar tiempo a los hilos a que terminen
         sleep(2000)
         val response = restTemplate.getForEntity(target, String::class.java)
+        sleep(2000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
-
-        // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(3000)
-
+        
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "shorturl","limit = '3'" )).isEqualTo(1)
     }
 
@@ -140,6 +138,7 @@ class HttpRequestTest {
         val headers = HttpHeaders()
         headers["User-agent"] = "asdnklajsd"
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        sleep(3000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
 
@@ -155,6 +154,8 @@ class HttpRequestTest {
     @Test
     fun `redirectTo returns a not found when the key does not exist`() {
         val response = restTemplate.getForEntity("http://localhost:$port/f684a3c4", String::class.java)
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
 
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(0)
@@ -332,7 +333,14 @@ class HttpRequestTest {
         // Hacer la redirección
         restTemplate.getForEntity(response.headers.location, String::class.java)
         // Esperar 6000
-        Thread.sleep(6000)
+
+        Thread.sleep(3000)
+
+        // Hacer una llamada para actualizar las metricas
+        val statsEndpoint = "http://localhost:$port/api/update/metrics"
+        restTemplate.postForEntity(statsEndpoint, null, String::class.java)
+
+        Thread.sleep(3000)
 
         // Obtener el valor actualizado de la métrica totalRedirecciones después de la redirección
         val updatedRedirectionCount = getTotalRedireccionesMetric()
@@ -361,12 +369,19 @@ class HttpRequestTest {
         repeat(3) {
             restTemplate.getForEntity(response.headers.location, String::class.java)
             // Esperar 6000
-            Thread.sleep(6000)
+            Thread.sleep(2000)
         }
+
         response = shortUrl("https://youtube.com")
         restTemplate.getForEntity(response.headers.location, String::class.java)
         // Esperar 7000
-        Thread.sleep(7000)
+        Thread.sleep(3000)
+
+        // Hacer una llamada para actualizar las metricas
+        val statsEndpoint = "http://localhost:$port/api/update/metrics"
+        restTemplate.postForEntity(statsEndpoint, null, String::class.java)
+
+        Thread.sleep(3000)
 
         // Obtener el valor actualizado de la métrica totalRedirecciones después de la redirección
         val updatedRedirectionCount = getTotalRedireccionesMetric()
@@ -433,10 +448,10 @@ class HttpRequestTest {
         // Configure the controller to use the reachableMock
         urlShortenerController.isUrlReachableUseCase = reachableMock
 
-        val target = shortUrl("http://example45.com/", "3").headers.location
+        val target = shortUrl("https://www.unizar.es/", "3").headers.location
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(3000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -445,12 +460,19 @@ class HttpRequestTest {
         // Probar por ejemplo 3 veces a solicitar
         repeat(3) {
             val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+
+            // Dormir un poco para dar tiempo a los hilos a que terminen
+            sleep(3000)
+
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-            assertThat(response.headers.location).isEqualTo(URI.create("http://example45.com/"))
+            assertThat(response.headers.location).isEqualTo(URI.create("https://www.unizar.es/"))
         }
 
         // Comprobar que ahora no se redirige y se devuelve estado 429
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(2000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
     }
 
@@ -468,19 +490,21 @@ class HttpRequestTest {
         // Configure the controller to use the reachableMock
         urlShortenerController.isUrlReachableUseCase = reachableMock
 
+        val target = shortUrl("https://moodle.unizar.es/add/my/", "3").headers.location
+        sleep(5000)
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(3000)
-
-        val target = shortUrl("http://example1.com/", "3").headers.location
-        // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(3000)
         require(target != null)
 
         val response = restTemplate.getForEntity(target, String::class.java)
-        assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
-        assertThat(response.headers.location).isEqualTo(URI.create("http://example1.com/"))
 
-        val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/b57de46d", String::class.java)
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(5000)
+        assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
+        assertThat(response.headers.location).isEqualTo(URI.create("https://moodle.unizar.es/add/my/"))
+
+        val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/281d5122", String::class.java)
+
+        sleep(5000)
         println("infoResponse: ${infoResponse.body}")
         assertThat(infoResponse.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(infoResponse.body).contains("\"limit\":3")
@@ -496,10 +520,12 @@ class HttpRequestTest {
         // Repetir 3 veces y comprobar que el numRedirecciones va aumentando
         repeat(3) {
             val response = restTemplate.getForEntity(target, String::class.java)
+            sleep(3000)
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
             assertThat(response.headers.location).isEqualTo(URI.create("https://youtube.com/"))
 
-            val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/60aa83b6", String::class.java)
+            val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/281d5122", String::class.java)
+            sleep(3000)
             println("infoResponse: ${infoResponse.body}")
             assertThat(infoResponse.statusCode).isEqualTo(HttpStatus.OK)
             assertThat(infoResponse.body).contains("\"numRedirecciones\":${it+1}")

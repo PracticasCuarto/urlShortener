@@ -116,7 +116,6 @@ class UrlShortenerControllerImpl(
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
         // val propiedades = locationUseCase.obtenerInformacionUsuario(userAgent, request.remoteAddr)
-        rabbitSender.sendLocationChannelMessage(id + "||||||" + userAgent + "||||||" + request.remoteAddr)
 
         // Casos de error alcanzabilidad
         isUrlReachableUseCase.getInfoForReachable(id)
@@ -127,6 +126,10 @@ class UrlShortenerControllerImpl(
            // logClickUseCase.logClick(id, propiedades)
             val h = HttpHeaders()
             h.location = URI.create(it.target)
+            if (HttpStatus.valueOf(it.mode) != HttpStatus.NOT_FOUND) {
+                // indicamos en la db que ya lo hemos calculado
+                rabbitSender.sendLocationChannelMessage(id + "||||||" + userAgent + "||||||" + request.remoteAddr)
+            }
             return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
         }
     }
