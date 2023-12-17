@@ -126,9 +126,8 @@ class UrlShortenerControllerImpl(
             // logClickUseCase.logClick(id, propiedades)
             val h = HttpHeaders()
             h.location = URI.create(it.target)
-            if (HttpStatus.valueOf(it.mode) == HttpStatus.OK) {
+            if (HttpStatus.valueOf(it.mode) != HttpStatus.NOT_FOUND) {
                 // indicamos en la db que ya lo hemos calculado
-                println("ya lo hemos calculado")
                 rabbitSender.sendLocationChannelMessage(id + "||||||" + userAgent + "||||||" + request.remoteAddr)
             }
             return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
