@@ -28,7 +28,7 @@ class ListenerReachableImpl(
         val state = isUrlReachable.isUrlReachable(url, hash)
         val stateInt = if (state) 1 else 0
         // escribir en la cola para que escriba en la DB
-        rabbitMQSender.sendThirdChannelMessage("$hash $stateInt")
+        rabbitMQSender.writeDBChannelMessage("$hash $stateInt")
     }
 
 

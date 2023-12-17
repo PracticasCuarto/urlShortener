@@ -13,15 +13,15 @@ class RabbitMQSenderImpl(
 ) : RabbitMQSenderService {
 
     override fun sendFirstChannelMessage(message: String) {
-        sendMessage("alcanzable", message)
+        sendMessage("qr", message)
     }
 
-    override fun sendSecondChannelMessage(message: String) {
-        sendMessage("Qr", message)
+    override fun reachableChannelMessage(message: String) {
+        sendMessage("reachable", message)
     }
 
-    override fun sendThirdChannelMessage(message: String) {
-        sendMessage("DB", message)
+    override fun writeDBChannelMessage(message: String) {
+        sendMessage("db", message)
     }
 
     override fun sendMetricsChannelMessage(message: String) {

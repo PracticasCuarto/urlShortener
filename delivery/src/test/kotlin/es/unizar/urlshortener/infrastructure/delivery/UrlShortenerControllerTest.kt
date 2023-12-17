@@ -109,7 +109,7 @@ class UrlShortenerControllerTest {
             .andExpect(status().isCreated)
 
         //verify(msgUseCaseReachable).sendMsg("cola_2", "f684a3c4 http://example.com/")
-        verify(rabbitMQSender).sendSecondChannelMessage("f684a3c4 http://example.com/")
+        verify(rabbitMQSender).reachableChannelMessage("f684a3c4 http://example.com/")
 
     }
 

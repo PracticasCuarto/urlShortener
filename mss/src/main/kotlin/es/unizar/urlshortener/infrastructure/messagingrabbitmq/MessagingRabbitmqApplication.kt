@@ -30,7 +30,7 @@ class MessagingRabbitmqApplication {
 
     @Bean
     fun binding(queue: Queue?, exchange: TopicExchange?): Binding {
-        return BindingBuilder.bind(queue).to(exchange).with("alcanzable")
+        return BindingBuilder.bind(queue).to(exchange).with("qr")
     }
 
     @Bean
@@ -59,7 +59,7 @@ class MessagingRabbitmqApplication {
 
     @Bean
     fun binding2(queue2: Queue?, exchange: TopicExchange?): Binding {
-        return BindingBuilder.bind(queue2).to(exchange).with("Qr")
+        return BindingBuilder.bind(queue2).to(exchange).with("reachable")
     }
 
     @Bean
@@ -88,7 +88,7 @@ class MessagingRabbitmqApplication {
 
     @Bean
     fun binding3(queue3: Queue?, exchange: TopicExchange?): Binding {
-        return BindingBuilder.bind(queue3).to(exchange).with("DB")
+        return BindingBuilder.bind(queue3).to(exchange).with("db")
     }
 
     @Bean

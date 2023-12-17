@@ -5,7 +5,7 @@ import es.unizar.urlshortener.core.usecases.QrUseCase
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 
 interface ListenerLocation {
-    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName])
+    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName5])
     fun receiveMessage(message: String) {}
 }
 
@@ -13,7 +13,7 @@ interface ListenerLocation {
 class ListenerLocationImpl (
     val locationUseCase: LocationUseCase
 ) : ListenerLocation {
-    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName])
+    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName5])
     override fun receiveMessage(message: String) {
         println("Received procesando location <$message>")
 
