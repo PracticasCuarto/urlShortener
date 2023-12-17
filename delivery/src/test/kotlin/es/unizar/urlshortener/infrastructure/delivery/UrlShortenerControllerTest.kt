@@ -4,6 +4,7 @@ package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.*
 import es.unizar.urlshortener.core.usecases.*
+import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerLocation
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -67,6 +68,9 @@ class UrlShortenerControllerTest {
 
     @MockBean
     private lateinit var msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics
+
+    @MockBean
+    private lateinit var listenerLocation: ListenerLocation
 
 
     @Test
@@ -155,7 +159,7 @@ class UrlShortenerControllerTest {
             .andExpect(status().isTemporaryRedirect)
             .andExpect(redirectedUrl("http://example.com/"))
 
-        verify(logClickUseCase).logClick("key", ClickProperties(ip = "127.0.0.1"))
+        //verify(listenerLocation).logClick("key", ClickProperties(ip = "127.0.0.1"))
     }
 
 

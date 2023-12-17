@@ -71,7 +71,7 @@ class ApplicationConfiguration(
     fun qrUseCase() = QrUseCaseImpl(shortUrlRepositoryService())
 
     @Bean
-    fun locationUseCase() = LocationUseCaseImpl()
+    fun locationUseCase() = LocationUseCaseImpl(logClickUseCase())
 
     @Bean
     fun rabbitMQSenderService() = RabbitMQSenderImpl(rabbitmqSender)

@@ -4,6 +4,8 @@ import es.unizar.urlshortener.core.usecases.LocationUseCase
 import es.unizar.urlshortener.core.usecases.QrUseCase
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 
+const val PARTES = 3
+
 interface ListenerLocation {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName5])
     fun receiveMessage(message: String) {}
@@ -17,16 +19,22 @@ class ListenerLocationImpl (
     override fun receiveMessage(message: String) {
         println("Received procesando location <$message>")
 
-        // troceamos la entrada teniendo en cuenta el primer espacio para separar valores
+        val parts = message.split("||||||")
 
-        val userAgent = message.substringBefore("||||||")
-        val request = message.substringAfter("||||||")
+        if (parts.size == PARTES) {
+            val id = parts[0]
+            val userAgent = parts[1]
+            val request = parts[2]
 
-        println("Received <$userAgent>")
-        println("Received <$request>")
+            println("ID: $id")
+            println("User Agent: $userAgent")
+            println("Request: $request")
 
-        // Generamos el código QR
-//        locationUseCase.obtenerInformacionUsuario(userAgent, request)
+            // Generamos el código QR
+            locationUseCase.obtenerInformacionUsuario(userAgent, request, id)
+        } else {
+            println("El formato del mensaje no es válido.")
+        }
 
     }
 
