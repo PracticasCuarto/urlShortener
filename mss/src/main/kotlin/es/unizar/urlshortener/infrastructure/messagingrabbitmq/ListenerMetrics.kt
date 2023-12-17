@@ -15,7 +15,6 @@ interface ListenerMetrics {
 class ListenerMetricsImpl : ListenerMetrics {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName4])
     override fun receiveMessage(message: String) {
-        println("Received message metrics")
 
         try {
             // URL a la que se enviará la solicitud POST
@@ -44,11 +43,6 @@ class ListenerMetricsImpl : ListenerMetrics {
             } finally {
                 connection.disconnect() // Asegurarse de cerrar la conexión
             }
-
-            // Obtener el código de respuesta
-            val responseCode = connection.responseCode
-            println("POST request successful. Response Code: $responseCode")
-
 
         } catch (e: Exception) {
             // Manejo de excepciones detallado

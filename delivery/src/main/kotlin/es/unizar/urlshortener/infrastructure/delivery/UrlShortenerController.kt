@@ -135,7 +135,6 @@ class UrlShortenerControllerImpl(
     // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
     @PostMapping("/api/update/metrics")
     override fun updateSystemInfoURL() {
-        println("Actualizando sistema en el endpoint.sahgbjvnudbfhmrgbhjfbv jhjcb jhdmfbdjhbh..")
         returnSystemInfoUseCase.updateSystemInfo()
         //println("Actualización exitosa.")
 
@@ -246,8 +245,6 @@ class UrlShortenerControllerImpl(
     override fun updateSystemInfoAutomatic() {
         // Escribir en cola de rabbit que se actualice
         msgUseCaseUpdateMetrics.sendMsg("cola_3", "update")
-
-        println("Actualizando sistema automaticamente...")
     }
 
 }

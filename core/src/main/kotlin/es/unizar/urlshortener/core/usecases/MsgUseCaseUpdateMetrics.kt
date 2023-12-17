@@ -11,7 +11,6 @@ class MsgUseCaseUpdateMetricsImpl(
 
 ) : MsgUseCaseUpdateMetrics {
     override fun sendMsg(canal: String, msj: String) {
-        println("Sending message to channel $canal...")
         rabbitMQSender.sendMetricsChannelMessage(msj)
     }
 }
