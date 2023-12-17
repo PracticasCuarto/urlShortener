@@ -60,9 +60,6 @@ class UrlShortenerControllerTest {
     private lateinit var returnSystemInfoUseCase: ReturnSystemInfoUseCase
 
     @MockBean
-    private lateinit var msgUseCase: MsgUseCase
-
-    @MockBean
     private lateinit var rabbitMQSender: RabbitMQSenderService
 
     @MockBean
@@ -327,7 +324,8 @@ class UrlShortenerControllerTest {
         ).andExpect(status().isCreated)
 
         // then - verificas que se llamó a la función sendMsg con los argumentos correctos
-        verify(msgUseCase).sendMsg("cola_1","$validHash $shortUrl")
+        //verify(msgUseCase).sendMsg("cola_1","$validHash $shortUrl")
+        verify(rabbitMQSender).qrChannelMessage("$validHash $shortUrl")
 
     }
 

@@ -12,7 +12,7 @@ class RabbitMQSenderImpl(
     private val rabbitTemplate: RabbitTemplate
 ) : RabbitMQSenderService {
 
-    override fun sendFirstChannelMessage(message: String) {
+    override fun qrChannelMessage(message: String) {
         sendMessage("qr", message)
     }
 

@@ -112,7 +112,6 @@ class UrlShortenerControllerImpl(
     var isUrlReachableUseCase: IsUrlReachableUseCase,
     val qrUseCase: QrUseCase,                        //añadimos el nuevo UseCase del Qr
     val locationUseCase: LocationUseCase,
-    val msgUseCase: MsgUseCase,
     val msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics,
     val msgUseCaseLocation: MsgUseCaseLocation,
     val rabbitSender: RabbitMQSenderService
@@ -194,8 +193,7 @@ class UrlShortenerControllerImpl(
             println("He entrado para hacer el QR")
 
             //Enviamos mensaje por la cola 1 para que se genere el QR enviando como string el hash un espacio y la url
-            msgUseCase.sendMsg("cola_1", "${result.hash} ${url.toString()}")
-            //rabbitSender.sendFirstChannelMessage("${result.hash} ${url.toString()}")
+            rabbitSender.qrChannelMessage("${result.hash} ${url.toString()}")
         }
 
         //Comprobamos el valor de hayQr en la base de datos.

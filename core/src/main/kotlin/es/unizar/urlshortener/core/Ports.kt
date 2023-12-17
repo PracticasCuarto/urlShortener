@@ -37,7 +37,7 @@ interface ShortUrlRepositoryService {
 }
 
 interface RabbitMQSenderService {
-    fun sendFirstChannelMessage(message: String)
+    fun qrChannelMessage(message: String)
 
     fun reachableChannelMessage(message: String)
 
