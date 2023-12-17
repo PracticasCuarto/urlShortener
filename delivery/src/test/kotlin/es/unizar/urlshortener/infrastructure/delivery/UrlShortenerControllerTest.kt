@@ -67,9 +67,6 @@ class UrlShortenerControllerTest {
     private lateinit var locationUseCase: LocationUseCase
 
     @MockBean
-    private lateinit var msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics
-
-    @MockBean
     private lateinit var listenerLocation: ListenerLocation
 
 

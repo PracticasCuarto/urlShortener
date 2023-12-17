@@ -108,7 +108,6 @@ class UrlShortenerControllerImpl(
     var isUrlReachableUseCase: IsUrlReachableUseCase,
     val qrUseCase: QrUseCase,                        //añadimos el nuevo UseCase del Qr
     val locationUseCase: LocationUseCase,
-    val msgUseCaseUpdateMetrics: MsgUseCaseUpdateMetrics,
     val rabbitSender: RabbitMQSenderService
 
 ) : UrlShortenerController {
@@ -233,7 +232,7 @@ class UrlShortenerControllerImpl(
     @Scheduled(fixedRate = 6000)
     override fun updateSystemInfoAutomatic() {
         // Escribir en cola de rabbit que se actualice
-        msgUseCaseUpdateMetrics.sendMsg("cola_3", "update")
+        rabbitSender.sendMetricsChannelMessage("update")
     }
 
 }

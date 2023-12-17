@@ -77,9 +77,6 @@ class ApplicationConfiguration(
     fun rabbitMQSenderService() = RabbitMQSenderImpl(rabbitmqSender)
 
     @Bean
-    fun msgUseCaseUpdateMetrics() = MsgUseCaseUpdateMetricsImpl(rabbitMQSenderService())
-
-    @Bean
     fun listenerQr() = ListenerQrImpl(qrUseCase())
 
     @Bean
