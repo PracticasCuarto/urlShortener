@@ -1,6 +1,6 @@
 
 @file:Suppress("WildcardImport", "ReturnCount", "LongParameterList", "UnusedPrivateProperty",
-    "UnusedParameter", "FunctionOnlyReturningConstant")
+    "UnusedParameter")
 package es.unizar.urlshortener.infrastructure.delivery
 
 import es.unizar.urlshortener.core.ClickProperties

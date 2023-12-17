@@ -68,7 +68,8 @@ class ReturnSystemInfoUseCaseImpl(
         // Obtener la cantidad total de URLs acortadas solicitadas en la ultima hora
         totalRedirecciones = clickRepository.obtainNumClicks()
 
-        println("Metricas del sistema: usedMemoryInMb: $usedMemoryInMb, uptimeInSeconds: $uptimeInSeconds, totalRedirecciones: $totalRedirecciones ")
+        println("Metricas del sistema: usedMemoryInMb: $usedMemoryInMb, uptimeInSeconds: " +
+                "$uptimeInSeconds, totalRedirecciones: $totalRedirecciones ")
     }
 
 
