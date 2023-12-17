@@ -73,8 +73,8 @@ class ReturnSystemInfoUseCaseImpl(
         println("usedMemoryInMb: $usedMemoryInMb")
         println("uptimeInSeconds: $uptimeInSeconds")
         println("totalRedirecciones: $totalRedirecciones")
-
     }
+
 
     override fun returnSystemInfo(key: String): SystemInfo {
         // printear todas las variables

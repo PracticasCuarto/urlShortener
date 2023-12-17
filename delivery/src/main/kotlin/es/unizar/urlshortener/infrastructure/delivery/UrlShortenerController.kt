@@ -3,11 +3,10 @@
     "UnusedParameter", "FunctionOnlyReturningConstant")
 package es.unizar.urlshortener.infrastructure.delivery
 
-import es.unizar.urlshortener.core.*
+import es.unizar.urlshortener.core.RabbitMQSenderService
+import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.*
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.io.Resource
 import org.springframework.hateoas.server.mvc.linkTo
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -16,10 +15,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.web.bind.annotation.*
-import ua_parser.Parser
-import java.io.File
-import java.io.Serializable
-import java.net.InetAddress
 import java.net.URI
 
 
@@ -63,7 +58,7 @@ interface UrlShortenerController {
 
     fun returnSystemInfo(@PathVariable id: String): SystemInfo
 
-     fun updateSystemInfoURL(@PathVariable id: String)
+     fun updateSystemInfoURL()
 
     fun updateSystemInfoAutomatic()
 }
@@ -137,6 +132,13 @@ class UrlShortenerControllerImpl(
     }
 
     // curl -v -d "url=http://www.unizar.es/&limit=3" http://localhost:8080/api/link para especificar el límite
+    @PostMapping("/api/update/metrics")
+    override fun updateSystemInfoURL() {
+        println("Actualizando sistema en el endpoint.sahgbjvnudbfhmrgbhjfbv jhjcb jhdmfbdjhbh..")
+        returnSystemInfoUseCase.updateSystemInfo()
+        //println("Actualización exitosa.")
+
+    }
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE], produces =
     [MediaType.APPLICATION_JSON_VALUE])
@@ -224,10 +226,6 @@ class UrlShortenerControllerImpl(
     override fun returnSystemInfo(@PathVariable id: String):
             SystemInfo = returnSystemInfoUseCase.returnSystemInfo(id)
 
-    @PostMapping("/api/update/metrics")
-    override fun updateSystemInfoURL(@PathVariable id: String) {
-        returnSystemInfoUseCase.updateSystemInfo()
-    }
 
     @GetMapping("/{id:(?!api|index).*}/qr", produces = [MediaType.IMAGE_PNG_VALUE])
     fun returnQr(@PathVariable id: String, @RequestHeader(value = "User-Agent", required = false)
