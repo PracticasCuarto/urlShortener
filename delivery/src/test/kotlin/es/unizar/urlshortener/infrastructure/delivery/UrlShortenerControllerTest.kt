@@ -377,6 +377,6 @@ class UrlShortenerControllerTest {
         mockMvc.perform(get("/{id}/qr", "281d5122"))
             .andDo(print())
             .andExpect(status().isOk)
-            .andExpect(content().contentType(MediaType.IMAGE_PNG)) // Verifica que el contenido sea de tipo imagen
+            .andExpect(content().contentType(MediaType.IMAGE_PNG))
     }
 }

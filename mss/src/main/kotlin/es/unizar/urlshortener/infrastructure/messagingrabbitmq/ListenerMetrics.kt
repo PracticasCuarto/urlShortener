@@ -15,12 +15,10 @@ interface ListenerMetrics {
 class ListenerMetricsImpl : ListenerMetrics {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName4])
     override fun receiveMessage(message: String) {
-        println("Received message metrics")
 
         try {
             // URL a la que se enviará la solicitud POST
             val url = URL("http://localhost:8080/api/update/metrics")
-            //val url = URL("http://localhost:8080/api/link")
 
             // Abrir conexión
             val connection = url.openConnection() as HttpURLConnection
@@ -41,14 +39,12 @@ class ListenerMetricsImpl : ListenerMetrics {
                 val outputStream: OutputStream = connection.outputStream
                 outputStream.write(postDataBytes)
                 outputStream.flush()
+
+                // Obtener el código de respuesta
+                connection.responseCode
             } finally {
                 connection.disconnect() // Asegurarse de cerrar la conexión
             }
-
-            // Obtener el código de respuesta
-            val responseCode = connection.responseCode
-            println("POST request successful. Response Code: $responseCode")
-
 
         } catch (e: Exception) {
             // Manejo de excepciones detallado

@@ -42,7 +42,6 @@ const val MILISECONDS = 1000
 /**
  * Implementation of [ReturnSystemInfoUseCase].
  */
-@EnableScheduling
 class ReturnSystemInfoUseCaseImpl(
     private val metricsEndpoint: MetricsEndpoint,
     private val clickRepository: ClickRepositoryService
@@ -55,7 +54,6 @@ class ReturnSystemInfoUseCaseImpl(
     private var uptimeInSeconds: Double = 0.0
 
     // Función que actualiza periódicamente la información del sistema
-    @Scheduled(fixedRate = 6000)
     override fun updateSystemInfo() {
         // Obtener la métrica jvm.memory.used
         val usedMemoryMetrics = metricsEndpoint.metric("jvm.memory.used", null)
@@ -70,9 +68,8 @@ class ReturnSystemInfoUseCaseImpl(
         // Obtener la cantidad total de URLs acortadas solicitadas en la ultima hora
         totalRedirecciones = clickRepository.obtainNumClicks()
 
-        println("usedMemoryInMb: $usedMemoryInMb")
-        println("uptimeInSeconds: $uptimeInSeconds")
-        println("totalRedirecciones: $totalRedirecciones")
+        println("Metricas del sistema: usedMemoryInMb: $usedMemoryInMb, uptimeInSeconds: " +
+                "$uptimeInSeconds, totalRedirecciones: $totalRedirecciones ")
     }
 
 
@@ -81,8 +78,6 @@ class ReturnSystemInfoUseCaseImpl(
 
         // Metrica numero de veces que se ha hecho click en la URL
         totalRedireccionesHash = clickRepository.obtainNumClicks(key)
-
-        println("totalRedireccionesHash: $totalRedireccionesHash")
 
         return SystemInfo(usedMemoryInMb, uptimeInSeconds, totalRedirecciones, totalRedireccionesHash)
     }

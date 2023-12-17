@@ -16,7 +16,7 @@ class ListenerReachableImpl(
 ) : ListenerReachable {
     @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     override fun receiveMessage(message: String) {
-        println("Received message queque Reachable")
+        println("Received message queue Reachable")
 
         // troceamos la entrada teniendo en cuenta el primer espacio para separar hash de url
         val hash = message.substringBefore(" ")
