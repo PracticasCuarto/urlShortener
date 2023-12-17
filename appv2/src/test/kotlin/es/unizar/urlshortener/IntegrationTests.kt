@@ -81,11 +81,10 @@ class HttpRequestTest {
         val response = restTemplate.getForEntity(target, String::class.java)
 
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(5000)
+        sleep(3000)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
-
 
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(1)
     }
@@ -98,9 +97,8 @@ class HttpRequestTest {
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
 
-        // Imprime el contenido de la tabla "click" de la base de datos
-        val shorturlTableContent = jdbcTemplate.queryForList("SELECT * FROM shorturl")
-        println("Contenido de la tabla 'shorturl': $shorturlTableContent")
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(3000)
 
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "shorturl","limit = '3'" )).isEqualTo(1)
     }
