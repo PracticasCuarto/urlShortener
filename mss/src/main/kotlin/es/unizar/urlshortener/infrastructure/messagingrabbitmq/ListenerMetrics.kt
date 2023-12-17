@@ -39,6 +39,9 @@ class ListenerMetricsImpl : ListenerMetrics {
                 val outputStream: OutputStream = connection.outputStream
                 outputStream.write(postDataBytes)
                 outputStream.flush()
+
+                // Obtener el código de respuesta
+                connection.responseCode
             } finally {
                 connection.disconnect() // Asegurarse de cerrar la conexión
             }
