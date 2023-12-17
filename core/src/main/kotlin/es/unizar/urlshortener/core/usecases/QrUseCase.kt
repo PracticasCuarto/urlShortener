@@ -24,8 +24,7 @@ data class QrInfo(
     val alcanzable: Int,
     val imageBytes: ByteArray?
 ) {
-
-    //hacer un equals y un hashcode como en ia (recomendacion de IntelIJ)
+    
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
