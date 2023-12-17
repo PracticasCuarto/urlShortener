@@ -74,18 +74,19 @@ class LocationUseCaseImpl (
             countryIsoCode = cityResponse.country.isoCode
         }
 
-        // Mostrar toda la informacion del usuario que solicita la redireccion
-        println(
-            "Usuario solicita redireccion: SistemaOperativo[$operatingSystem], Navegador[$browser], " +
-                    "IP[$ip], Ciudad[$cityName], Pais[$countryIsoCode]"
-        )
-
         val propiedades = ClickProperties(
             ip = ip, os = operatingSystem,
             browser = browser, country = countryIsoCode, city = cityName
         )
 
         logClickUseCase.logClick(id, propiedades)
+
+        // Mostrar toda la informacion del usuario que solicita la redireccion
+        println(
+            "Usuario solicita redireccion: SistemaOperativo[$operatingSystem], Navegador[$browser], " +
+                    "IP[$ip], Ciudad[$cityName], Pais[$countryIsoCode]"
+        )
+
         return propiedades
     }
 }

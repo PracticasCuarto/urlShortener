@@ -24,6 +24,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.jdbc.JdbcTestUtils
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import java.lang.Thread.sleep
 import java.net.URI
 
 
@@ -68,11 +69,23 @@ class HttpRequestTest {
 
     @Test
     fun `shortener returns a redirect when the key exists`() {
+        // forzamos a que la url sea alcanzable
+        // URL reachable mock
+        val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
+
+        // Configure the controller to use the reachableMock
+        urlShortenerController.isUrlReachableUseCase = reachableMock
+
         val target = shortUrl("http://example.com/").headers.location
         require(target != null)
         val response = restTemplate.getForEntity(target, String::class.java)
+
+        // Dormir un poco para dar tiempo a los hilos a que terminen
+        sleep(5000)
+
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
+
 
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(1)
     }

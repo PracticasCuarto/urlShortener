@@ -3,6 +3,7 @@
     "UnusedParameter", "FunctionOnlyReturningConstant")
 package es.unizar.urlshortener.infrastructure.delivery
 
+import es.unizar.urlshortener.core.ClickProperties
 import es.unizar.urlshortener.core.RabbitMQSenderService
 import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.*
@@ -124,7 +125,7 @@ class UrlShortenerControllerImpl(
         if (!redirectLimitUseCase.newRedirect(id)) return ResponseEntity(HttpStatus.TOO_MANY_REQUESTS)
 
         redirectUseCase.redirectTo(id).let {
-//            logClickUseCase.logClick(id, propiedades)
+           // logClickUseCase.logClick(id, propiedades)
             val h = HttpHeaders()
             h.location = URI.create(it.target)
             return ResponseEntity<Unit>(h, HttpStatus.valueOf(it.mode))
