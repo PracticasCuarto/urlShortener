@@ -8,6 +8,7 @@ import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseBadMock
 import es.unizar.urlshortener.core.usecases.isUrlReachableUseCaseGoodMock
 import es.unizar.urlshortener.infrastructure.delivery.ShortUrlDataOut
 import es.unizar.urlshortener.infrastructure.delivery.UrlShortenerControllerImpl
+import es.unizar.urlshortener.infrastructure.messagingrabbitmq.ListenerReachableImpl
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -46,6 +47,9 @@ class HttpRequestTest {
     @Autowired
     private lateinit var shortUrlRepositoryService: ShortUrlRepositoryService
 
+    @Autowired
+    private lateinit var listenerReachableImpl: ListenerReachableImpl
+
     @BeforeEach
     fun setup() {
         val httpClient = HttpClientBuilder.create()
@@ -75,7 +79,7 @@ class HttpRequestTest {
         val reachableMock = isUrlReachableUseCaseGoodMock(shortUrlRepositoryService)
 
         // Configure the controller to use the reachableMock
-        urlShortenerController.isUrlReachableUseCase = reachableMock
+        listenerReachableImpl.isUrlReachable = reachableMock
 
         val target = shortUrl("http://example.com/").headers.location
         require(target != null)
