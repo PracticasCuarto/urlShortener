@@ -8,12 +8,12 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 interface ListenerMetrics {
-    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
+//    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName4])
     fun receiveMessage(message: String) {}
 }
 
 class ListenerMetricsImpl : ListenerMetrics {
-    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName4])
+//    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName4])
     override fun receiveMessage(message: String) {
 
         try {

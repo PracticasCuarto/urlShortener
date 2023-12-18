@@ -7,7 +7,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 const val PARTES = 3
 
 interface ListenerLocation {
-    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName5])
+    //@RabbitListener(queues = [MessagingRabbitmqApplication.queueName5])
     fun receiveMessage(message: String) {}
 }
 
@@ -15,7 +15,7 @@ interface ListenerLocation {
 class ListenerLocationImpl (
     val locationUseCase: LocationUseCase
 ) : ListenerLocation {
-    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName5])
+    //@RabbitListener(queues = [MessagingRabbitmqApplication.queueName5])
     override fun receiveMessage(message: String) {
         println("Received procesando location <$message>")
 

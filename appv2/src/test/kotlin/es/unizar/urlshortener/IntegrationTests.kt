@@ -52,7 +52,6 @@ class HttpRequestTest {
 
     @BeforeEach
     fun setup() {
-        sleep(3000)
         val httpClient = HttpClientBuilder.create()
             .disableRedirectHandling()
             .build()
@@ -85,11 +84,11 @@ class HttpRequestTest {
         listenerReachableImpl.isUrlReachable = reachableMock
 
         val target = shortUrl("http://example19.com/", "3").headers.location
-        sleep(8000)
+        sleep(2000)
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
         val response = restTemplate.getForEntity(target, String::class.java)
-        sleep(8000)
+        sleep(2000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example19.com/"))
         
@@ -134,7 +133,7 @@ class HttpRequestTest {
 
         val target = shortUrl("http://example18.com/").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(8000)
+        sleep(2000)
         require(target != null)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
@@ -142,7 +141,7 @@ class HttpRequestTest {
                 "Chrome/119.0.0.0 Safari/537.36"
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(8000)
+        sleep(5000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example18.com/"))
 
@@ -164,13 +163,13 @@ class HttpRequestTest {
 
         val target = shortUrl("http://example17.com/").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(8000)
+        sleep(2000)
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
         val headers = HttpHeaders()
         headers["User-agent"] = "asdnklajsd"
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
-        sleep(8000)
+        sleep(2000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example17.com/"))
 
@@ -201,8 +200,8 @@ class HttpRequestTest {
 
         // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada,Barcelona
         val specifiedIp = "188.77.145.43"
-        val target = shortUrl("http://example.com/").headers.location
-        sleep(8000)
+        val target = shortUrl("http://example21.com/").headers.location
+        sleep(2000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -211,7 +210,7 @@ class HttpRequestTest {
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(8000)
+        sleep(2000)
 
         // Imprime el contenido de la tabla "click" de la base de datos
         val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
@@ -242,7 +241,7 @@ class HttpRequestTest {
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(7000)
 
         // Imprime el contenido de la tabla "click" de la base de datos
         val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
@@ -360,9 +359,9 @@ class HttpRequestTest {
         // Realizamos la operación de acortamiento
         val response = shortUrl("http://example13.com/")
 
+        Thread.sleep(1000)
         // Hacer la redirección
         restTemplate.getForEntity(response.headers.location, String::class.java)
-        // Esperar 6000
 
         Thread.sleep(3000)
 
@@ -385,7 +384,7 @@ class HttpRequestTest {
 
     // Test que compruebe que cuando se hacen 5 redirecciones a una URL, se sume 5 a la métrica de totalRedirecciones
     // pero no se sume a la metrica de totalRedireccionesHash porque no se solicita a la misma URL
-    @Test // TODO: Revisar
+    @Test
     fun `redirectTo increments totalRedirecciones and totalRedireccionesHash metrics when 3 redirections are made`() {
         // Forzamos a que la URL sea alcanzable
         // URL reachable mock
@@ -394,17 +393,17 @@ class HttpRequestTest {
         listenerReachableImpl.isUrlReachable = reachableMock
         // Realizamos la operación de acortamiento
         var response = shortUrl("http://example13.com/")
-        Thread.sleep(8000)
+        Thread.sleep(2000)
 
         // Hacer 3 redirecciones
         repeat(3) {
             restTemplate.getForEntity(response.headers.location, String::class.java)
             // Esperar 6000
-            Thread.sleep(8000)
+            Thread.sleep(2000)
         }
 
         response = shortUrl("https://youtube.com")
-        Thread.sleep(8000)
+        Thread.sleep(2000)
         restTemplate.getForEntity(response.headers.location, String::class.java)
         // Esperar 7000
         Thread.sleep(5000)
@@ -440,7 +439,7 @@ class HttpRequestTest {
         val target = shortUrl("http://example15.com/", "0").headers.location
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(8000)
+        sleep(2000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -449,7 +448,7 @@ class HttpRequestTest {
         // Probar por ejemplo 3 veces a solicitar
         repeat(3) {
             val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
-            sleep(8000)
+            sleep(2000)
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
             assertThat(response.headers.location).isEqualTo(URI.create("http://example15.com/"))
         }

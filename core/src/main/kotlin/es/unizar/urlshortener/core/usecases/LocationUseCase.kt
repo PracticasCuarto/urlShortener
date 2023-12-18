@@ -54,6 +54,7 @@ class LocationUseCaseImpl (
         ip: String,
         id: String
     ): ClickProperties {
+        println("Obteniendo información del usuario que solicita la redirección...")
         // Lógica para extraer el sistema operativo y el navegador del User-Agent
         val uaParser = Parser()
         val client = uaParser.parse(userAgent)
