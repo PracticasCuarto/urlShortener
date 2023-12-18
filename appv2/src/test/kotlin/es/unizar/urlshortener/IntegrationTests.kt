@@ -60,7 +60,6 @@ class HttpRequestTest {
     @AfterEach
     fun tearDowns() {
         JdbcTestUtils.deleteFromTables(jdbcTemplate, "shorturl", "click")
-        sleep(3000)
     }
 
     @Test
@@ -85,10 +84,10 @@ class HttpRequestTest {
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
         val response = restTemplate.getForEntity(target, String::class.java)
-        sleep(2000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example19.com/"))
-        
+
+        sleep(2000)
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "shorturl","limit = '3'" )).isEqualTo(1)
     }
 
@@ -105,16 +104,14 @@ class HttpRequestTest {
         require(target != null)
 
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(3000)
 
         val response = restTemplate.getForEntity(target, String::class.java)
-
-        // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example.com/"))
 
+        sleep(2000)
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(1)
     }
 
@@ -130,18 +127,17 @@ class HttpRequestTest {
 
         val target = shortUrl("http://example18.com/").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(3000)
         require(target != null)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
-        // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(5000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example18.com/"))
 
+        sleep(2000)
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "browser = 'Chrome'")).isEqualTo(1)
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
@@ -160,16 +156,17 @@ class HttpRequestTest {
 
         val target = shortUrl("http://example17.com/").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(3000)
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
         val headers = HttpHeaders()
         headers["User-agent"] = "asdnklajsd"
+
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
-        sleep(2000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("http://example17.com/"))
 
+        sleep(2000)
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "browser = 'Other'")).isEqualTo(1)
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
@@ -179,10 +176,9 @@ class HttpRequestTest {
     @Test
     fun `redirectTo returns a not found when the key does not exist`() {
         val response = restTemplate.getForEntity("http://localhost:$port/f684a3c4", String::class.java)
-        // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
         assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
 
+        sleep(2000)
         assertThat(JdbcTestUtils.countRowsInTable(jdbcTemplate, "click")).isEqualTo(0)
     }
 
@@ -198,15 +194,14 @@ class HttpRequestTest {
         // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada,Barcelona
         val specifiedIp = "188.77.145.43"
         val target = shortUrl("http://example21.com/").headers.location
-        sleep(2000)
+        sleep(3000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
         headers["X-Forwarded-For"] = specifiedIp
-        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
-        // Dormir un poco para dar tiempo a los hilos a que terminen
         sleep(2000)
 
         // Verifica que la IP especificada esté en la base de datos
@@ -226,18 +221,18 @@ class HttpRequestTest {
         // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada, Barcelona
         val specifiedIp = "188.77.145.43"
         val target = shortUrl("http://www.mcdonaldsnoessano.com/").headers.location
+        sleep(3000)
+
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
         headers["X-Forwarded-For"] = specifiedIp
 
-        // Dormir para dar tiempo a comprobar que es alcanzable la url
-        sleep(2000)
-        val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
+        restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(3000)
 
         // Verifica que la IP especificada esté en la base de datos
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
@@ -397,13 +392,13 @@ class HttpRequestTest {
         Thread.sleep(2000)
         restTemplate.getForEntity(response.headers.location, String::class.java)
         // Esperar 7000
-        Thread.sleep(5000)
+        Thread.sleep(3000)
 
         // Hacer una llamada para actualizar las metricas
         val statsEndpoint = "http://localhost:$port/api/update/metrics"
         restTemplate.postForEntity(statsEndpoint, null, String::class.java)
 
-        Thread.sleep(5000)
+        Thread.sleep(3000)
 
         // Obtener el valor actualizado de la métrica totalRedirecciones después de la redirección
         val updatedRedirectionCount = getTotalRedireccionesMetric()
@@ -439,7 +434,6 @@ class HttpRequestTest {
         // Probar por ejemplo 3 veces a solicitar
         repeat(3) {
             val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
-            sleep(2000)
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
             assertThat(response.headers.location).isEqualTo(URI.create("http://example15.com/"))
         }
@@ -480,8 +474,6 @@ class HttpRequestTest {
 
         val target = shortUrl("https://www.unizar.es/", "3").headers.location
         require(target != null)
-        // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(3000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -492,9 +484,6 @@ class HttpRequestTest {
         // Probar por ejemplo 3 veces a solicitar
         repeat(3) {
             val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
-
-            // Dormir un poco para dar tiempo a los hilos a que terminen
-            sleep(3000)
 
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
             assertThat(response.headers.location).isEqualTo(URI.create("https://www.unizar.es/"))
@@ -523,20 +512,20 @@ class HttpRequestTest {
         listenerReachableImpl.isUrlReachable = reachableMock
 
         val target = shortUrl("https://moodle.unizar.es/add/my/", "3").headers.location
-        sleep(5000)
+        sleep(3000)
         // Dormir un poco para dar tiempo a los hilos a que terminen
         require(target != null)
 
         val response = restTemplate.getForEntity(target, String::class.java)
 
-        // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(5000)
+        sleep(2000)
+
         assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
         assertThat(response.headers.location).isEqualTo(URI.create("https://moodle.unizar.es/add/my/"))
 
         val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/281d5122", String::class.java)
 
-        sleep(5000)
+        sleep(2000)
         println("infoResponse: ${infoResponse.body}")
         assertThat(infoResponse.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(infoResponse.body).contains("\"limit\":3")
@@ -553,18 +542,21 @@ class HttpRequestTest {
 
         val target = shortUrl("https://example14.com/", "3").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(5000)
+        sleep(3000)
         require(target != null)
 
         // Repetir 3 veces y comprobar que el numRedirecciones va aumentando
         repeat(3) {
             val response = restTemplate.getForEntity(target, String::class.java)
-            sleep(3000)
+
+            sleep(1000)
+
             assertThat(response.statusCode).isEqualTo(HttpStatus.TEMPORARY_REDIRECT)
             assertThat(response.headers.location).isEqualTo(URI.create("https://example14.com/"))
 
             val infoResponse = restTemplate.getForEntity("http://localhost:$port/api/link/a42a5856", String::class.java)
-            sleep(3000)
+
+            sleep(1000)
             println("infoResponse: ${infoResponse.body}")
             assertThat(infoResponse.statusCode).isEqualTo(HttpStatus.OK)
             assertThat(infoResponse.body).contains("\"numRedirecciones\":${it+1}")
