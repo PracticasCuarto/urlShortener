@@ -194,7 +194,7 @@ class HttpRequestTest {
         // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada,Barcelona
         val specifiedIp = "188.77.145.43"
         val target = shortUrl("http://example21.com/").headers.location
-        sleep(3000)
+        sleep(4000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -202,7 +202,7 @@ class HttpRequestTest {
         headers["X-Forwarded-For"] = specifiedIp
         restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
-        sleep(2000)
+        sleep(4000)
 
         // Verifica que la IP especificada esté en la base de datos
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
@@ -221,7 +221,7 @@ class HttpRequestTest {
         // Especifica la IP deseada, por ejemplo, "188.99.61.3" Esta en la ciudad Igualada, Barcelona
         val specifiedIp = "188.77.145.43"
         val target = shortUrl("http://www.mcdonaldsnoessano.com/").headers.location
-        sleep(3000)
+        sleep(4000)
 
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
@@ -232,7 +232,7 @@ class HttpRequestTest {
         restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(3000)
+        sleep(4000)
 
         // Verifica que la IP especificada esté en la base de datos
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
@@ -425,7 +425,7 @@ class HttpRequestTest {
         val target = shortUrl("http://example15.com/", "0").headers.location
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(4000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -450,7 +450,7 @@ class HttpRequestTest {
         val target = shortUrl("http://example.com/", "3").headers.location
         require(target != null)
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(2000)
+        sleep(4000)
         val headers = HttpHeaders()
         headers["User-agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -479,7 +479,7 @@ class HttpRequestTest {
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
 
-        sleep(3000)
+        sleep(4000)
 
         // Probar por ejemplo 3 veces a solicitar
         repeat(3) {
@@ -512,7 +512,7 @@ class HttpRequestTest {
         listenerReachableImpl.isUrlReachable = reachableMock
 
         val target = shortUrl("https://moodle.unizar.es/add/my/", "3").headers.location
-        sleep(3000)
+        sleep(4000)
         // Dormir un poco para dar tiempo a los hilos a que terminen
         require(target != null)
 
@@ -542,7 +542,7 @@ class HttpRequestTest {
 
         val target = shortUrl("https://example14.com/", "3").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(3000)
+        sleep(4000)
         require(target != null)
 
         // Repetir 3 veces y comprobar que el numRedirecciones va aumentando
