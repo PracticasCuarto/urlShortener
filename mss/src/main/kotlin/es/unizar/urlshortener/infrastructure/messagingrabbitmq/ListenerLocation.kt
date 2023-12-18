@@ -17,7 +17,6 @@ class ListenerLocationImpl (
 ) : ListenerLocation {
     //@RabbitListener(queues = [MessagingRabbitmqApplication.queueName5])
     override fun receiveMessage(message: String) {
-        println("Received procesando location <$message>")
 
         val parts = message.split("||||||")
 
@@ -25,10 +24,6 @@ class ListenerLocationImpl (
             val id = parts[0]
             val userAgent = parts[1]
             val request = parts[2]
-
-            println("ID: $id")
-            println("User Agent: $userAgent")
-            println("Request: $request")
 
             // Generamos el código QR
             locationUseCase.obtenerInformacionUsuario(userAgent, request, id)

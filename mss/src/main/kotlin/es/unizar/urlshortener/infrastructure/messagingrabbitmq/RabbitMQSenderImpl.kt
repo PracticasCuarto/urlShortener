@@ -33,7 +33,6 @@ class RabbitMQSenderImpl(
     }
 
     private fun sendMessage(channel: String, message: String) {
-        println("Sending message to channel $channel...")
         rabbitTemplate.convertAndSend(
             MessagingRabbitmqApplication.topicExchangeName,
             channel,

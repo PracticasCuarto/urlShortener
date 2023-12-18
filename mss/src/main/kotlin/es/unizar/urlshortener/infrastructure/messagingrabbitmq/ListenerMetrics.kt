@@ -48,7 +48,7 @@ class ListenerMetricsImpl : ListenerMetrics {
 
         } catch (e: Exception) {
             // Manejo de excepciones detallado
-            println("Error making POST request: ${e.message}")
+            println("Error making POST request (En tests no pasa nada): ${e.message}")
         }
     }
 }

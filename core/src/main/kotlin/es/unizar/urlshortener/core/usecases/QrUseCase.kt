@@ -99,7 +99,6 @@ class QrUseCaseImpl(
     // Función la cual devuelve el estado en el que se encuentra el qr.
     // 0 no existe, 1 creado y 2 creandose.
     override fun getCodeStatus(hash: String): Int {
-        println("Valores actuales del mapa al entrar a getCodeStatus:")
         qrCodeStatusMap.forEach { (key, value) ->
             println("$key: $value")
         }

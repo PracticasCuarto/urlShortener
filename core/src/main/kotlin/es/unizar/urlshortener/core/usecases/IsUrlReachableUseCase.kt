@@ -65,11 +65,9 @@ class IsUrlReachableUseCaseImpl(
         }
         return if (attempt == MAX_ATTEMPTS) {
             // Si se ha superado el número máximo de intentos, se devuelve false
-            println("La url NO es alcanzable")
             false
         } else {
             // Si no se ha superado el número máximo de intentos, se devuelve true
-            println("La url SI es alcanzable")
             true
         }
     }
@@ -77,7 +75,6 @@ class IsUrlReachableUseCaseImpl(
     override fun setCodeStatus(hash: String, status: Int) {
         // escribimos en la base de datos el estado del calculo de la alcanzabilidad
         // 0 no existe, 1 creado y 2 creandose.
-        println("Me piden que guarde esto en la DB <$status>")
         shortUrlEntityRepository.updateAlcanzable(hash, status)
     }
 
@@ -97,12 +94,10 @@ class IsUrlReachableUseCaseImpl(
         val alcanzable = getCodeStatus(id)
 
          if (alcanzable == 2){
-             println("FOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOK")
              // La URL corta existe, pero no sabemos todavia si es alcanzable o no
              throw CalculandoException("Alcanzabilidad en proceso de creacion")
          }
         else if (alcanzable == 0){
-             println("WHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT")
             // La URL corta no es alcanzable
             throw InvalidExist( "No se puede redirigir a esta URL")
         }

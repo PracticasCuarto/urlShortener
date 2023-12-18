@@ -209,10 +209,6 @@ class HttpRequestTest {
         // Dormir un poco para dar tiempo a los hilos a que terminen
         sleep(2000)
 
-        // Imprime el contenido de la tabla "click" de la base de datos
-        val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
-        println("Contenido de la tabla 'click': $clickTableContent")
-
         // Verifica que la IP especificada esté en la base de datos
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "ip = '$specifiedIp' AND Country = 'ES' AND City = 'Igualada'")).isEqualTo(1)
@@ -235,20 +231,18 @@ class HttpRequestTest {
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/119.0.0.0 Safari/537.36"
         headers["X-Forwarded-For"] = specifiedIp
+
+        // Dormir para dar tiempo a comprobar que es alcanzable la url
+        sleep(2000)
         val response = restTemplate.exchange(target, HttpMethod.GET, HttpEntity<Unit>(headers), String::class.java)
 
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(7000)
-
-        // Imprime el contenido de la tabla "click" de la base de datos
-        val clickTableContent = jdbcTemplate.queryForList("SELECT * FROM click")
-        println("Contenido de la tabla 'click': $clickTableContent")
+        sleep(2000)
 
         // Verifica que la IP especificada esté en la base de datos
         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcTemplate, "click",
             "ip = '$specifiedIp' AND Country = 'ES' AND City = 'Igualada'")).isEqualTo(1)
     }
-
 
     @Test
     fun `creates returns a basic redirect if it can compute a hash`() {
@@ -559,7 +553,7 @@ class HttpRequestTest {
 
         val target = shortUrl("https://example14.com/", "3").headers.location
         // Dormir un poco para dar tiempo a los hilos a que terminen
-        sleep(10000)
+        sleep(5000)
         require(target != null)
 
         // Repetir 3 veces y comprobar que el numRedirecciones va aumentando

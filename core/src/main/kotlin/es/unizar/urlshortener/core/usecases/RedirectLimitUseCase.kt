@@ -91,24 +91,18 @@ class RedirectLimitUseCaseImpl: RedirectLimitUseCase {
      * @param hash The hash associated with the shortened link.
      */
     override fun newRedirect(hash: String) : Boolean {
-        println("Comprobando si la redirección es posible, con hash: $hash")
         val exists = findRedirectByHash(hash)
         var resultado = false
-
-        println("Redirección existe: $exists")
 
         val redirect = obtainRedirectByHash(hash)
         if (!exists) {
             resultado = true
         }
         else if (redirect?.limit == 0L|| redirect?.bucket?.tryConsume(1) == true) {
-                println("Redirección permitida, total de redirecciones: ${redirect.bucket.availableTokens}")
                 counter.increment()
                 resultado = true
         }
-        else {
-            println("Redirección no permitida")
-        }
+
         return resultado
     }
 

@@ -18,8 +18,6 @@ class ListenerQrImpl (
         // troceamos la entrada teniendo en cuenta el primer espacio para separar hash de url
         val hash = message.substringBefore(" ")
         val url = message.substringAfter(" ")
-        println("Received <$hash>")
-        println("Received <$url>")
 
         // Generamos el código QR
         qrUseCase.generateQRCode(url, hash)

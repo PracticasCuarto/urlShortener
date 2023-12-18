@@ -115,8 +115,6 @@ class UrlShortenerControllerImpl(
     @GetMapping("/{id:(?!api|index).*}")
     override fun redirectTo(@PathVariable id: String, request: HttpServletRequest): ResponseEntity<Unit> {
         val userAgent = request.getHeader("User-Agent") ?: "Unknown User-Agent"
-        // val propiedades = locationUseCase.obtenerInformacionUsuario(userAgent, request.remoteAddr)
-
         // Casos de error alcanzabilidad
         isUrlReachableUseCase.getInfoForReachable(id)
 
@@ -137,8 +135,6 @@ class UrlShortenerControllerImpl(
     @PostMapping("/api/update/metrics")
     override fun updateSystemInfoURL() {
         returnSystemInfoUseCase.updateSystemInfo()
-        //println("Actualización exitosa.")
-
     }
 
     @PostMapping("/api/link", consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE], produces =
@@ -193,7 +189,6 @@ class UrlShortenerControllerImpl(
 
 
         // indicamos en la db que todavia lo estamos calculando
-        println("calculando alcanzabilidad...")
         isUrlReachableUseCase.setCodeStatus(result.hash, 2)
         rabbitSender.reachableChannelMessage("${result.hash} ${data.url}")
         // ---------------------------------------------------------------
