@@ -5,7 +5,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import es.unizar.urlshortener.core.usecases.IsUrlReachableUseCase
 
 interface ListenerReachable {
-//    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     fun receiveMessage(message: String) {}
 }
 
@@ -14,7 +13,6 @@ class ListenerReachableImpl(
     var isUrlReachable: IsUrlReachableUseCase,
     val rabbitMQSender: RabbitMQSenderService
 ) : ListenerReachable {
-//    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName2])
     override fun receiveMessage(message: String) {
 
         // troceamos la entrada teniendo en cuenta el primer espacio para separar hash de url

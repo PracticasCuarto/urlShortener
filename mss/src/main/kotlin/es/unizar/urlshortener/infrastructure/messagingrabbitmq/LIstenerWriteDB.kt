@@ -4,7 +4,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import es.unizar.urlshortener.core.usecases.IsUrlReachableUseCase
 
 interface ListenerWriteDB {
-//    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName3])
     fun receiveMessage(message: String) {}
 }
 
@@ -12,7 +11,6 @@ interface ListenerWriteDB {
 class ListenerWriteDBImpl (
     val isUrlReachable: IsUrlReachableUseCase
 ) : ListenerWriteDB {
-//    @RabbitListener(queues = [MessagingRabbitmqApplication.queueName3])
     override fun receiveMessage(message: String) {
 
         // troceamos la entrada teniendo en cuenta el primer espacio para separar hash del estado
