@@ -42,9 +42,6 @@ class HttpRequestTest {
     private lateinit var restTemplate: TestRestTemplate
 
     @Autowired
-    private lateinit var urlShortenerController: UrlShortenerControllerImpl
-
-    @Autowired
     private lateinit var shortUrlRepositoryService: ShortUrlRepositoryService
 
     @Autowired
